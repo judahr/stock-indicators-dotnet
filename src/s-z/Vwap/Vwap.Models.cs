@@ -1,10 +1,14 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class VwapResult : ResultBase, IReusableResult
 {
-    [Serializable]
-    public class VwapResult : ResultBase
+    public VwapResult(DateTime date)
     {
-        public decimal? Vwap { get; set; }
+        Date = date;
     }
+
+    public double? Vwap { get; set; }
+
+    double? IReusableResult.Value => Vwap;
 }

@@ -1,10 +1,14 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class ChopResult : ResultBase, IReusableResult
 {
-    [Serializable]
-    public class ChopResult : ResultBase
+    public ChopResult(DateTime date)
     {
-        public decimal? Chop { get; set; }
+        Date = date;
     }
+
+    public double? Chop { get; set; }
+
+    double? IReusableResult.Value => Chop;
 }

@@ -1,18 +1,21 @@
 ---
-title: Rate of Change (ROC) and Momentum Oscillator
+title: Rate of Change (ROC)
+description: Rate of Change, also known as Momentum Oscillator, is the percent change of price over a lookback window.  Momentum is the raw price change equivalent.
 permalink: /indicators/Roc/
-layout: default
+image: /assets/charts/Roc.png
+type: price-characteristic
+layout: indicator
 ---
 
 # {{ page.title }}
 
-[Rate of Change](https://en.wikipedia.org/wiki/Momentum_(technical_analysis)), also known as Momentum Oscillator, is the percent change of Close price over a lookback window.  A [Rate of Change with Bands](#roc-with-bands) variant, created by Vitali Apirine, is also included.
-[[Discuss] :speech_balloon:]({{site.github.repository_url}}/discussions/242 "Community discussion about this indicator")
+[Rate of Change](https://en.wikipedia.org/wiki/Momentum_(technical_analysis)), also known as Momentum Oscillator, is the percent change of price over a lookback window.  Momentum is the raw price change equivalent.  A [Rate of Change with Bands]({{site.baseurl}}/indicators/RocWb/#content) variant, created by Vitali Apirine, is also available.
+[[Discuss] &#128172;]({{site.github.repository_url}}/discussions/242 "Community discussion about this indicator")
 
-![image]({{site.baseurl}}/assets/charts/Roc.png)
+![chart for {{page.title}}]({{site.baseurl}}{{page.image}})
 
 ```csharp
-// usage
+// C# usage syntax
 IEnumerable<RocResult> results =
   quotes.GetRoc(lookbackPeriods);
 
@@ -23,16 +26,15 @@ IEnumerable<RocResult> results =
 
 ## Parameters
 
-| name | type | notes
-| -- |-- |--
-| `lookbackPeriods` | int | Number of periods (`N`) to go back.  Must be greater than 0.
-| `smaPeriods` | int | Optional.  Number of periods in the moving average of ROC.  Must be greater than 0, if specified.
+**`lookbackPeriods`** _`int`_ - Number of periods (`N`) to go back.  Must be greater than 0.
+
+**`smaPeriods`** _`int`_ - Optional.  Number of periods in the moving average of ROC.  Must be greater than 0, if specified.
 
 ### Historical quotes requirements
 
-You must have at least `N+1` periods of `quotes`.
+You must have at least `N+1` periods of `quotes` to cover the warmup periods.
 
-`quotes` is an `IEnumerable<TQuote>` collection of historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
+`quotes` is a collection of generic `TQuote` historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
 
 ## Response
 
@@ -47,54 +49,39 @@ IEnumerable<RocResult>
 
 ### RocResult
 
-| name | type | notes
-| -- |-- |--
-| `Date` | DateTime | Date
-| `Roc` | decimal | Rate of Change over `N` lookback periods (%, not decimal)
-| `RocSma` | decimal | Moving average (SMA) of ROC based on `smaPeriods` periods, if specified
+**`Date`** _`DateTime`_ - Date from evaluated `TQuote`
+
+**`Momentum`** _`double`_ - Raw change in price over `N` periods
+
+**`Roc`** _`double`_ - Percent change in price (%, not decimal)
+
+**`RocSma`** _`double`_ - Moving average (SMA) of ROC based on `smaPeriods` periods, if specified
 
 ### Utilities
 
+- [.Condense()]({{site.baseurl}}/utilities#condense)
 - [.Find(lookupDate)]({{site.baseurl}}/utilities#find-indicator-result-by-date)
 - [.RemoveWarmupPeriods()]({{site.baseurl}}/utilities#remove-warmup-periods)
 - [.RemoveWarmupPeriods(qty)]({{site.baseurl}}/utilities#remove-warmup-periods)
 
-See [Utilities and Helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
+See [Utilities and helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
 
-## Example
+## Chaining
 
-```csharp
-// fetch historical quotes from your feed (your method)
-IEnumerable<Quote> quotes = GetHistoryFromFeed("SPY");
-
-// calculate 20-period ROC
-IEnumerable<RocResult> results = quotes.GetRoc(20);
-```
-
-## ROC with Bands
-
-![image]({{site.baseurl}}/assets/charts/RocWb.png)
+This indicator may be generated from any chain-enabled indicator or method.
 
 ```csharp
-// usage
-IEnumerable<RocWbResult> results =
-  quotes.GetRocWb(lookbackPeriods, emaPeriods, stdDevPeriods);
+// example
+var results = quotes
+    .Use(CandlePart.HL2)
+    .GetRoc(..);
 ```
 
-### Parameters with Bands
+Results can be further processed on `Roc` with additional chain-enabled indicators.
 
-| name | type | notes
-| -- |-- |--
-| `lookbackPeriods` | int | Number of periods (`N`) to go back.  Must be greater than 0.  Typical values range from 10-20.
-| `emaPeriods` | int | Number of periods for the ROC EMA line.  Must be greater than 0.  Standard is 3.
-| `stdDevPeriods` | int | Number of periods the standard deviation for upper/lower band lines.  Must be greater than 0 and not more than `lookbackPeriods`.  Standard is to use same value as `lookbackPeriods`.
-
-### RocWbResult
-
-| name | type | notes
-| -- |-- |--
-| `Date` | DateTime | Date
-| `Roc` | decimal | Rate of Change over `N` lookback periods (%, not decimal)
-| `RocEma` | decimal | Exponential moving average (EMA) of `Roc`
-| `UpperBand` | decimal | Upper band of ROC (overbought indicator)
-| `LowerBand` | decimal | Lower band of ROC (oversold indicator)
+```csharp
+// example
+var results = quotes
+    .GetRoc(..)
+    .GetEma(..);
+```

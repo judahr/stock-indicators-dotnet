@@ -1,13 +1,15 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class StdDevChannelsResult : ResultBase
 {
-    [Serializable]
-    public class StdDevChannelsResult : ResultBase
+    public StdDevChannelsResult(DateTime date)
     {
-        public decimal? Centerline { get; set; }
-        public decimal? UpperChannel { get; set; }
-        public decimal? LowerChannel { get; set; }
-        public bool BreakPoint { get; set; }
+        Date = date;
     }
+
+    public double? Centerline { get; set; }
+    public double? UpperChannel { get; set; }
+    public double? LowerChannel { get; set; }
+    public bool BreakPoint { get; set; }
 }

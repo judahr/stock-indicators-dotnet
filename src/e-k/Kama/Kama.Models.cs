@@ -1,11 +1,15 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class KamaResult : ResultBase, IReusableResult
 {
-    [Serializable]
-    public class KamaResult : ResultBase
+    public KamaResult(DateTime date)
     {
-        public decimal? ER { get; set; }
-        public decimal? Kama { get; set; }
+        Date = date;
     }
+
+    public double? ER { get; set; }
+    public double? Kama { get; set; }
+
+    double? IReusableResult.Value => Kama;
 }

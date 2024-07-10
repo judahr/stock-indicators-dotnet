@@ -1,83 +1,121 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Skender.Stock.Indicators;
+namespace Tests.Indicators;
 
-namespace Internal.Tests
+[TestClass]
+public class T3Tests : TestBase
 {
-    [TestClass]
-    public class T3 : TestBase
+    [TestMethod]
+    public void Standard()
     {
+        List<T3Result> results = quotes
+            .GetT3(5, 0.7)
+            .ToList();
 
-        [TestMethod]
-        public void Standard()
-        {
+        // proper quantities
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(502, results.Count(x => x.T3 != null));
 
-            List<T3Result> results = quotes.GetT3(5, 0.7).ToList();
+        // sample values
+        T3Result r5 = results[5];
+        Assert.AreEqual(213.9654, r5.T3.Round(4));
 
-            // assertions
+        T3Result r24 = results[24];
+        Assert.AreEqual(215.9481, r24.T3.Round(4));
 
-            // proper quantities
-            // should always be the same number of results as there is quotes
-            Assert.AreEqual(502, results.Count);
-            Assert.AreEqual(478, results.Where(x => x.T3 != null).Count());
+        T3Result r44 = results[44];
+        Assert.AreEqual(224.9412, r44.T3.Round(4));
 
-            // sample values
-            T3Result r1 = results[23];
-            Assert.IsNull(r1.T3);
+        T3Result r149 = results[149];
+        Assert.AreEqual(235.8851, r149.T3.Round(4));
 
-            T3Result r2 = results[24];
-            Assert.AreEqual(215.9343m, Math.Round((decimal)r2.T3, 4));
+        T3Result r249 = results[249];
+        Assert.AreEqual(257.8735, r249.T3.Round(4));
 
-            T3Result r3 = results[44];
-            Assert.AreEqual(224.9412m, Math.Round((decimal)r3.T3, 4));
+        T3Result r501 = results[501];
+        Assert.AreEqual(238.9308, r501.T3.Round(4));
+    }
 
-            T3Result r4 = results[149];
-            Assert.AreEqual(235.8851m, Math.Round((decimal)r4.T3, 4));
+    [TestMethod]
+    public void UseTuple()
+    {
+        List<T3Result> results = quotes
+            .Use(CandlePart.Close)
+            .GetT3()
+            .ToList();
 
-            T3Result r5 = results[249];
-            Assert.AreEqual(257.8735m, Math.Round((decimal)r5.T3, 4));
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(502, results.Count(x => x.T3 != null));
+    }
 
-            T3Result r6 = results[501];
-            Assert.AreEqual(238.9308m, Math.Round((decimal)r6.T3, 4));
-        }
+    [TestMethod]
+    public void TupleNaN()
+    {
+        List<T3Result> r = tupleNanny
+            .GetT3()
+            .ToList();
 
-        [TestMethod]
-        public void BadData()
-        {
-            IEnumerable<T3Result> r = Indicator.GetT3(badQuotes);
-            Assert.AreEqual(502, r.Count());
-        }
+        Assert.AreEqual(200, r.Count);
+        Assert.AreEqual(0, r.Count(x => x.T3 is double and double.NaN));
+    }
 
-        [TestMethod]
-        public void Removed()
-        {
-            List<T3Result> results = quotes.GetT3(5, 0.7)
-                .RemoveWarmupPeriods()
-                .ToList();
+    [TestMethod]
+    public void Chainee()
+    {
+        List<T3Result> results = quotes
+            .GetSma(2)
+            .GetT3()
+            .ToList();
 
-            // assertions
-            Assert.AreEqual(502 - (6 * (5 - 1) + 250), results.Count);
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(501, results.Count(x => x.T3 != null));
+    }
 
-            T3Result last = results.LastOrDefault();
-            Assert.AreEqual(238.9308m, Math.Round((decimal)last.T3, 4));
-        }
+    [TestMethod]
+    public void Chainor()
+    {
+        List<SmaResult> results = quotes
+            .GetT3()
+            .GetSma(10)
+            .ToList();
 
-        [TestMethod]
-        public void Exceptions()
-        {
-            // bad lookback period
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
-                Indicator.GetT3(quotes, 0));
+        Assert.AreEqual(502, results.Count);
+    }
 
-            // bad volume factor
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
-                Indicator.GetT3(quotes, 25, 0));
+    [TestMethod]
+    public void BadData()
+    {
+        List<T3Result> r = badQuotes
+            .GetT3()
+            .ToList();
 
-            // insufficient quotes
-            Assert.ThrowsException<BadQuotesException>(() =>
-                Indicator.GetT3(TestData.GetDefault(6 * (5 - 1) + 99), 5));
-        }
+        Assert.AreEqual(502, r.Count);
+        Assert.AreEqual(0, r.Count(x => x.T3 is double and double.NaN));
+    }
+
+    [TestMethod]
+    public void NoQuotes()
+    {
+        List<T3Result> r0 = noquotes
+            .GetT3()
+            .ToList();
+
+        Assert.AreEqual(0, r0.Count);
+
+        List<T3Result> r1 = onequote
+            .GetT3()
+            .ToList();
+
+        Assert.AreEqual(1, r1.Count);
+    }
+
+    [TestMethod]
+    public void Exceptions()
+    {
+        // bad lookback period
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+            quotes.GetT3(0));
+
+        // bad volume factor
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+            quotes.GetT3(25, 0));
     }
 }

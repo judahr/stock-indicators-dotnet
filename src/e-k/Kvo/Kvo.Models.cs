@@ -1,11 +1,15 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class KvoResult : ResultBase, IReusableResult
 {
-    [Serializable]
-    public class KvoResult : ResultBase
+    internal KvoResult(DateTime date)
     {
-        public decimal? Oscillator { get; set; }
-        public decimal? Signal { get; set; }
+        Date = date;
     }
+
+    public double? Oscillator { get; set; }
+    public double? Signal { get; set; }
+
+    double? IReusableResult.Value => Oscillator;
 }

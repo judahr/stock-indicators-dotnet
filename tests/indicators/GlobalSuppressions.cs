@@ -1,4 +1,4 @@
-﻿// This file is used by Code Analysis to maintain SuppressMessage
+// This file is used by Code Analysis to maintain SuppressMessage
 // attributes that are applied to this project.
 // Project-level suppressions either have no target or are given
 // a specific target and scoped to a namespace, type, member, etc.
@@ -6,23 +6,26 @@
 using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage(
-    "Globalization",
-    "CA1303:Do not pass literals as localized parameters",
-    Justification = "Not worth refactoring for tests.")]
+    "StyleCop.CSharp.NamingRules",
+    "SA1304:Non-private readonly fields should begin with upper-case letter",
+    Justification = "Acceptable for test project.")]
 
 [assembly: SuppressMessage(
-    "Style",
-    "IDE0058:Expression value is never used",
-    Justification = "Not worth refactoring for tests.")]
+    "StyleCop.CSharp.NamingRules",
+    "SA1307:Accessible fields should begin with upper-case letter",
+    Justification = "Acceptable for test project.")]
 
 [assembly: SuppressMessage(
-    "StyleCop.CSharp.DocumentationRules",
-    "SA1600:Elements should be documented",
-    Justification = "Not documenting unit test projects.")]
+    "StyleCop.CSharp.NamingRules",
+    "SA1311:Static readonly fields should begin with upper-case letter",
+    Justification = "Acceptable for test project.")]
 
-// this can be removed after Microsoft publishes fix,
-// see https://github.com/dotnet/roslyn/issues/55014
 [assembly: SuppressMessage(
-    "Style",
-    "IDE0130:Namespace does not match folder structure",
-    Justification = "Microsoft bug, not real")]
+    "Security",
+    "CA5394:Do not use insecure randomness",
+    Justification = "Okay for test rig, non-production code.")]
+
+[assembly: SuppressMessage(
+    "StyleCop.CSharp.SpacingRules",
+    "SA1010:Opening square brackets should be spaced correctly",
+    Justification = "Invalid for new C# 12 [ collection ] syntax.")]

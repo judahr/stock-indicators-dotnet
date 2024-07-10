@@ -1,12 +1,16 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class CmfResult : ResultBase, IReusableResult
 {
-    [Serializable]
-    public class CmfResult : ResultBase
+    public CmfResult(DateTime date)
     {
-        public decimal MoneyFlowMultiplier { get; set; }
-        public decimal MoneyFlowVolume { get; set; }
-        public decimal? Cmf { get; set; }
+        Date = date;
     }
+
+    public double? MoneyFlowMultiplier { get; set; }
+    public double? MoneyFlowVolume { get; set; }
+    public double? Cmf { get; set; }
+
+    double? IReusableResult.Value => Cmf;
 }

@@ -1,33 +1,34 @@
 ---
 title: Hull Moving Average (HMA)
+description: Created by Alan Hull, the Hull Moving Average is a modified weighted average of price that reduces lag.
 permalink: /indicators/Hma/
-layout: default
+image: /assets/charts/Hma.png
+type: moving-average
+layout: indicator
 ---
 
 # {{ page.title }}
 
-Created by Alan Hull, the [Hull Moving Average](https://alanhull.com/hull-moving-average) is a modified weighted average of `Close` price over `N` lookback periods that reduces lag.
-[[Discuss] :speech_balloon:]({{site.github.repository_url}}/discussions/252 "Community discussion about this indicator")
+Created by Alan Hull, the [Hull Moving Average](https://alanhull.com/hull-moving-average) is a modified weighted average of price that reduces lag.
+[[Discuss] &#128172;]({{site.github.repository_url}}/discussions/252 "Community discussion about this indicator")
 
-![image]({{site.baseurl}}/assets/charts/Hma.png)
+![chart for {{page.title}}]({{site.baseurl}}{{page.image}})
 
 ```csharp
-// usage
+// C# usage syntax
 IEnumerable<HmaResult> results =
-  quotes.GetHma(lookbackPeriods);  
+  quotes.GetHma(lookbackPeriods);
 ```
 
 ## Parameters
 
-| name | type | notes
-| -- |-- |--
-| `lookbackPeriods` | int | Number of periods (`N`) in the moving average.  Must be greater than 1.
+**`lookbackPeriods`** _`int`_ - Number of periods (`N`) in the moving average.  Must be greater than 1.
 
 ### Historical quotes requirements
 
-You must have at least `N+(integer of SQRT(N))-1` periods of `quotes`.
+You must have at least `N+(integer of SQRT(N))-1` periods of `quotes` to cover the warmup periods.
 
-`quotes` is an `IEnumerable<TQuote>` collection of historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
+`quotes` is a collection of generic `TQuote` historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
 
 ## Response
 
@@ -42,25 +43,35 @@ IEnumerable<HmaResult>
 
 ### HmaResult
 
-| name | type | notes
-| -- |-- |--
-| `Date` | DateTime | Date
-| `Hma` | decimal | Hull moving average for `N` lookback periods
+**`Date`** _`DateTime`_ - Date from evaluated `TQuote`
+
+**`Hma`** _`double`_ - Hull moving average
 
 ### Utilities
 
+- [.Condense()]({{site.baseurl}}/utilities#condense)
 - [.Find(lookupDate)]({{site.baseurl}}/utilities#find-indicator-result-by-date)
 - [.RemoveWarmupPeriods()]({{site.baseurl}}/utilities#remove-warmup-periods)
 - [.RemoveWarmupPeriods(qty)]({{site.baseurl}}/utilities#remove-warmup-periods)
 
-See [Utilities and Helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
+See [Utilities and helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
 
-## Example
+## Chaining
+
+This indicator may be generated from any chain-enabled indicator or method.
 
 ```csharp
-// fetch historical quotes from your feed (your method)
-IEnumerable<Quote> quotes = GetHistoryFromFeed("MSFT");
+// example
+var results = quotes
+    .Use(CandlePart.HL2)
+    .GetHma(..);
+```
 
-// calculate 20-period HMA
-IEnumerable<HmaResult> results = quotes.GetHma(20);
+Results can be further processed on `Hma` with additional chain-enabled indicators.
+
+```csharp
+// example
+var results = quotes
+    .GetHma(..)
+    .GetRsi(..);
 ```

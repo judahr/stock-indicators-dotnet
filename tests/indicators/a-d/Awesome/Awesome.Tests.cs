@@ -1,82 +1,136 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Skender.Stock.Indicators;
+namespace Tests.Indicators;
 
-namespace Internal.Tests
+[TestClass]
+public class AwesomeTests : TestBase
 {
-    [TestClass]
-    public class Awesome : TestBase
+    [TestMethod]
+    public void Standard()
     {
+        List<AwesomeResult> results = quotes
+            .GetAwesome(5, 34)
+            .ToList();
 
-        [TestMethod]
-        public void Standard()
-        {
+        // proper quantities
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(469, results.Count(x => x.Oscillator != null));
 
-            List<AwesomeResult> results = quotes.GetAwesome(5, 34)
-                .ToList();
+        // sample values
+        AwesomeResult r1 = results[32];
+        Assert.AreEqual(null, r1.Oscillator);
+        Assert.AreEqual(null, r1.Normalized);
 
-            // assertions
+        AwesomeResult r2 = results[33];
+        Assert.AreEqual(5.4756, r2.Oscillator.Round(4));
+        Assert.AreEqual(2.4548, r2.Normalized.Round(4));
 
-            // should always be the same number of results as there is quotes
-            Assert.AreEqual(502, results.Count);
-            Assert.AreEqual(469, results.Where(x => x.Oscillator != null).Count());
+        AwesomeResult r3 = results[249];
+        Assert.AreEqual(5.0618, r3.Oscillator.Round(4));
+        Assert.AreEqual(1.9634, r3.Normalized.Round(4));
 
-            // sample values
-            AwesomeResult r1 = results[32];
-            Assert.AreEqual(null, r1.Oscillator);
-            Assert.AreEqual(null, r1.Normalized);
+        AwesomeResult r4 = results[501];
+        Assert.AreEqual(-17.7692, r4.Oscillator.Round(4));
+        Assert.AreEqual(-7.2763, r4.Normalized.Round(4));
+    }
 
-            AwesomeResult r2 = results[33];
-            Assert.AreEqual(5.4756m, Math.Round((decimal)r2.Oscillator, 4));
-            Assert.AreEqual(2.4548m, Math.Round((decimal)r2.Normalized, 4));
+    [TestMethod]
+    public void UseTuple()
+    {
+        List<AwesomeResult> results = quotes
+            .Use(CandlePart.Close)
+            .GetAwesome()
+            .ToList();
 
-            AwesomeResult r3 = results[249];
-            Assert.AreEqual(5.0618m, Math.Round((decimal)r3.Oscillator, 4));
-            Assert.AreEqual(1.9634m, Math.Round((decimal)r3.Normalized, 4));
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(469, results.Count(x => x.Oscillator != null));
+    }
 
-            AwesomeResult r4 = results[501];
-            Assert.AreEqual(-17.7692m, Math.Round((decimal)r4.Oscillator, 4));
-            Assert.AreEqual(-7.2763m, Math.Round((decimal)r4.Normalized, 4));
-        }
+    [TestMethod]
+    public void TupleNaN()
+    {
+        List<AwesomeResult> r = tupleNanny
+            .GetAwesome()
+            .ToList();
 
-        [TestMethod]
-        public void BadData()
-        {
-            IEnumerable<AwesomeResult> r = Indicator.GetAwesome(badQuotes);
-            Assert.AreEqual(502, r.Count());
-        }
+        Assert.AreEqual(200, r.Count);
+        Assert.AreEqual(0, r.Count(x => x.Oscillator is double and double.NaN));
+    }
 
-        [TestMethod]
-        public void Removed()
-        {
-            List<AwesomeResult> results = quotes.GetAwesome(5, 34)
-                .RemoveWarmupPeriods()
-                .ToList();
+    [TestMethod]
+    public void Chainee()
+    {
+        List<AwesomeResult> results = quotes
+            .GetSma(2)
+            .GetAwesome()
+            .ToList();
 
-            // assertions
-            Assert.AreEqual(502 - 33, results.Count);
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(468, results.Count(x => x.Oscillator != null));
+    }
 
-            AwesomeResult last = results.LastOrDefault();
-            Assert.AreEqual(-17.7692m, Math.Round((decimal)last.Oscillator, 4));
-            Assert.AreEqual(-7.2763m, Math.Round((decimal)last.Normalized, 4));
-        }
+    [TestMethod]
+    public void Chainor()
+    {
+        List<SmaResult> results = quotes
+            .GetAwesome()
+            .GetSma(10)
+            .ToList();
 
-        [TestMethod]
-        public void Exceptions()
-        {
-            // bad fast period
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
-                Indicator.GetAwesome(quotes, 0, 34));
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(460, results.Count(x => x.Sma != null));
+    }
 
-            // bad slow period
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
-                Indicator.GetAwesome(quotes, 25, 25));
+    [TestMethod]
+    public void BadData()
+    {
+        List<AwesomeResult> r = badQuotes
+            .GetAwesome()
+            .ToList();
 
-            // insufficient quotes
-            Assert.ThrowsException<BadQuotesException>(() =>
-                Indicator.GetAwesome(TestData.GetDefault(33), 5, 34));
-        }
+        Assert.AreEqual(502, r.Count);
+        Assert.AreEqual(0, r.Count(x => x.Oscillator is double and double.NaN));
+    }
+
+    [TestMethod]
+    public void NoQuotes()
+    {
+        List<AwesomeResult> r0 = noquotes
+            .GetAwesome()
+            .ToList();
+
+        Assert.AreEqual(0, r0.Count);
+
+        List<AwesomeResult> r1 = onequote
+            .GetAwesome()
+            .ToList();
+
+        Assert.AreEqual(1, r1.Count);
+    }
+
+    [TestMethod]
+    public void Removed()
+    {
+        List<AwesomeResult> results = quotes
+            .GetAwesome(5, 34)
+            .RemoveWarmupPeriods()
+            .ToList();
+
+        // assertions
+        Assert.AreEqual(502 - 33, results.Count);
+
+        AwesomeResult last = results.LastOrDefault();
+        Assert.AreEqual(-17.7692, last.Oscillator.Round(4));
+        Assert.AreEqual(-7.2763, last.Normalized.Round(4));
+    }
+
+    [TestMethod]
+    public void Exceptions()
+    {
+        // bad fast period
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+            quotes.GetAwesome(0, 34));
+
+        // bad slow period
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+            quotes.GetAwesome(25, 25));
     }
 }

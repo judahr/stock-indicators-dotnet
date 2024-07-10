@@ -1,13 +1,15 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class DonchianResult : ResultBase
 {
-    [Serializable]
-    public class DonchianResult : ResultBase
+    public DonchianResult(DateTime date)
     {
-        public decimal? UpperBand { get; set; }
-        public decimal? Centerline { get; set; }
-        public decimal? LowerBand { get; set; }
-        public decimal? Width { get; set; }
+        Date = date;
     }
+
+    public decimal? UpperBand { get; set; }
+    public decimal? Centerline { get; set; }
+    public decimal? LowerBand { get; set; }
+    public decimal? Width { get; set; }
 }

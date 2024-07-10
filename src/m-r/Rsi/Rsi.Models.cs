@@ -1,10 +1,14 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class RsiResult : ResultBase, IReusableResult
 {
-    [Serializable]
-    public class RsiResult : ResultBase
+    public RsiResult(DateTime date)
     {
-        public decimal? Rsi { get; set; }
+        Date = date;
     }
+
+    public double? Rsi { get; set; }
+
+    double? IReusableResult.Value => Rsi;
 }

@@ -1,12 +1,16 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class ElderRayResult : ResultBase, IReusableResult
 {
-    [Serializable]
-    public class ElderRayResult : ResultBase
+    public ElderRayResult(DateTime date)
     {
-        public decimal? Ema { get; set; }
-        public decimal? BullPower { get; set; }
-        public decimal? BearPower { get; set; }
+        Date = date;
     }
+
+    public double? Ema { get; set; }
+    public double? BullPower { get; set; }
+    public double? BearPower { get; set; }
+
+    double? IReusableResult.Value => BullPower + BearPower;
 }

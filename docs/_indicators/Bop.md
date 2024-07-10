@@ -1,33 +1,34 @@
 ---
 title: Balance of Power (BOP)
+description: Created by Igor Levshin, the [Balance of Power](https://school.stockcharts.com/doku.php?id=technical_indicators:balance_of_power) (aka Balance of Market Power) is a momentum oscillator that depicts the strength of buying and selling pressure.
 permalink: /indicators/Bop/
-layout: default
+image: /assets/charts/Bop.png
+type: price-characteristic
+layout: indicator
 ---
 
 # {{ page.title }}
 
 Created by Igor Levshin, the [Balance of Power](https://school.stockcharts.com/doku.php?id=technical_indicators:balance_of_power) (aka Balance of Market Power) is a momentum oscillator that depicts the strength of buying and selling pressure.
-[[Discuss] :speech_balloon:]({{site.github.repository_url}}/discussions/302 "Community discussion about this indicator")
+[[Discuss] &#128172;]({{site.github.repository_url}}/discussions/302 "Community discussion about this indicator")
 
-![image]({{site.baseurl}}/assets/charts/Bop.png)
+![chart for {{page.title}}]({{site.baseurl}}{{page.image}})
 
 ```csharp
-// usage
+// C# usage syntax
 IEnumerable<BopResult> results =
-  quotes.GetBop(smoothPeriods);  
+  quotes.GetBop(smoothPeriods);
 ```
 
 ## Parameters
 
-| name | type | notes
-| -- |-- |--
-| `smoothPeriods` | int | Number of periods (`N`) for smoothing.  Must be greater than 0.  Default is 14.
+**`smoothPeriods`** _`int`_ - Number of periods (`N`) for smoothing.  Must be greater than 0.  Default is 14.
 
 ### Historical quotes requirements
 
-You must have at least `N` periods of `quotes`.
+You must have at least `N` periods of `quotes` to cover the warmup periods.
 
-`quotes` is an `IEnumerable<TQuote>` collection of historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
+`quotes` is a collection of generic `TQuote` historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
 
 ## Response
 
@@ -42,25 +43,28 @@ IEnumerable<BopResult>
 
 ### BopResult
 
-| name | type | notes
-| -- |-- |--
-| `Date` | DateTime | Date
-| `Bop` | decimal | Balance of Power
+**`Date`** _`DateTime`_ - Date from evaluated `TQuote`
+
+**`Bop`** _`double`_ - Balance of Power
 
 ### Utilities
 
+- [.Condense()]({{site.baseurl}}/utilities#condense)
 - [.Find(lookupDate)]({{site.baseurl}}/utilities#find-indicator-result-by-date)
 - [.RemoveWarmupPeriods()]({{site.baseurl}}/utilities#remove-warmup-periods)
 - [.RemoveWarmupPeriods(qty)]({{site.baseurl}}/utilities#remove-warmup-periods)
 
-See [Utilities and Helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
+See [Utilities and helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
 
-## Example
+## Chaining
+
+Results can be further processed on `Bop` with additional chain-enabled indicators.
 
 ```csharp
-// fetch historical quotes from your feed (your method)
-IEnumerable<Quote> quotes = GetHistoryFromFeed("MSFT");
-
-// calculate 14-period BOP
-IEnumerable<BopResult> results = quotes.GetBop(14);
+// example
+var results = quotes
+    .GetBop(..)
+    .GetSlope(..);
 ```
+
+This indicator must be generated from `quotes` and **cannot** be generated from results of another chain-enabled indicator or method.

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<indicator>
+<info>
   <summary>
     On-balance Volume (OBV) is a rolling accumulation of volume based on Close price direction.
     <para>
       See
-      <see href="https://daveskender.github.io/Stock.Indicators/indicators/Obv/#content">documentation</see>
+      <see href="https://dotnet.StockIndicators.dev/indicators/Obv/#content?utm_source=library&amp;utm_medium=inline-help&amp;utm_campaign=embedded">documentation</see>
       for more information.
     </para>
   </summary>
@@ -14,5 +14,4 @@
   <param name="smaPeriods">Optional.  Number of periods for an SMA of the OBV line.</param>
   <returns>Time series of OBV values.</returns>
   <exception cref="ArgumentOutOfRangeException">Invalid parameter value provided.</exception>
-  <exception cref="BadQuotesException">Insufficient quotes provided.</exception>
-</indicator>
+</info>

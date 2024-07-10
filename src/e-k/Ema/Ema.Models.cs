@@ -1,10 +1,14 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class EmaResult : ResultBase, IReusableResult
 {
-    [Serializable]
-    public class EmaResult : ResultBase
+    public EmaResult(DateTime date)
     {
-        public decimal? Ema { get; set; }
+        Date = date;
     }
+
+    public double? Ema { get; set; }
+
+    double? IReusableResult.Value => Ema;
 }

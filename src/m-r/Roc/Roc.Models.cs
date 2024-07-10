@@ -1,20 +1,16 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class RocResult : ResultBase, IReusableResult
 {
-    [Serializable]
-    public class RocResult : ResultBase
+    public RocResult(DateTime date)
     {
-        public decimal? Roc { get; set; }
-        public decimal? RocSma { get; set; }
+        Date = date;
     }
 
-    [Serializable]
-    public class RocWbResult : ResultBase
-    {
-        public decimal? Roc { get; set; }
-        public decimal? RocEma { get; set; }
-        public decimal? UpperBand { get; set; }
-        public decimal? LowerBand { get; set; }
-    }
+    public double? Momentum { get; set; }
+    public double? Roc { get; set; }
+    public double? RocSma { get; set; }
+
+    double? IReusableResult.Value => Roc;
 }

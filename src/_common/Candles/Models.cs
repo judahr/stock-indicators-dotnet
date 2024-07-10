@@ -1,26 +1,36 @@
-using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+// CANDLESTICK MODELS
+
+[Serializable]
+public class CandleProperties : Quote
 {
-    // CANDLESTICK MODELS
+    // raw sizes
+    public decimal? Size => High - Low;
+    public decimal? Body => (Open > Close) ? (Open - Close) : (Close - Open);
+    public decimal? UpperWick => High - (Open > Close ? Open : Close);
+    public decimal? LowerWick => (Open > Close ? Close : Open) - Low;
 
-    [Serializable]
-    internal class Candle : Quote
+    // percent sizes
+    public double? BodyPct => (Size != 0) ? (double?)(Body / Size) : 1;
+    public double? UpperWickPct => (Size != 0) ? (double?)(UpperWick / Size) : 1;
+    public double? LowerWickPct => (Size != 0) ? (double?)(LowerWick / Size) : 1;
+
+    // directional info
+    public bool IsBullish => Close > Open;
+    public bool IsBearish => Close < Open;
+}
+
+[Serializable]
+public class CandleResult : ResultBase
+{
+    public CandleResult(DateTime date)
     {
-        // raw sizes
-        internal decimal Size => High - Low;
-        internal decimal Body => (Open > Close) ? (Open - Close) : (Close - Open);
-        internal decimal UpperWick => High - (Open > Close ? Open : Close);
-        internal decimal LowerWick => (Open > Close ? Close : Open) - Low;
-
-        // percent sizes
-        internal decimal BodyPct => (Size != 0) ? Body / Size : 1m;
-        internal decimal UpperWickPct => (Size != 0) ? UpperWick / Size : 1m;
-        internal decimal LowerWickPct => (Size != 0) ? LowerWick / Size : 1m;
-
-        // directional info
-        internal bool IsBullish => (Close > Open);
-        internal bool IsBearish => (Close < Open);
+        Date = date;
+        Candle = new CandleProperties();
     }
 
+    public decimal? Price { get; set; }
+    public Match Match { get; set; }
+    public CandleProperties Candle { get; set; }
 }

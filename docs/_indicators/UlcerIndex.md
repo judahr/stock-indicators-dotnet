@@ -1,33 +1,34 @@
 ---
 title: Ulcer Index (UI)
+description: Created by Peter Martin, the Ulcer Index is a measure of downside price volatility.  Often called the "heart attack" score, it measures the amount of pain seen from drawdowns in financial market prices and portfolio value.
 permalink: /indicators/UlcerIndex/
-layout: default
+image: /assets/charts/UlcerIndex.png
+type: price-characteristic
+layout: indicator
 ---
 
 # {{ page.title }}
 
-Created by Peter Martin, the [Ulcer Index](https://en.wikipedia.org/wiki/Ulcer_index) is a measure of downside Close price volatility over a lookback window.
-[[Discuss] :speech_balloon:]({{site.github.repository_url}}/discussions/232 "Community discussion about this indicator")
+Created by Peter Martin, the [Ulcer Index](https://en.wikipedia.org/wiki/Ulcer_index) is a measure of downside price volatility over a lookback window.  Often called the "heart attack" score, it measures the amount of pain seen from drawdowns in financial market prices and portfolio value.
+[[Discuss] &#128172;]({{site.github.repository_url}}/discussions/232 "Community discussion about this indicator")
 
-![image]({{site.baseurl}}/assets/charts/UlcerIndex.png)
+![chart for {{page.title}}]({{site.baseurl}}{{page.image}})
 
 ```csharp
-// usage
+// C# usage syntax
 IEnumerable<UlcerIndexResult> results =
-  quotes.GetUlcerIndex(lookbackPeriods);  
+  quotes.GetUlcerIndex(lookbackPeriods);
 ```
 
 ## Parameters
 
-| name | type | notes
-| -- |-- |--
-| `lookbackPeriods` | int | Number of periods (`N`) for review.  Must be greater than 0.  Default is 14.
+**`lookbackPeriods`** _`int`_ - Number of periods (`N`) for review.  Must be greater than 0.  Default is 14.
 
 ### Historical quotes requirements
 
-You must have at least `N` periods of `quotes`.
+You must have at least `N` periods of `quotes` to cover the warmup periods.
 
-`quotes` is an `IEnumerable<TQuote>` collection of historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
+`quotes` is a collection of generic `TQuote` historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
 
 ## Response
 
@@ -42,25 +43,35 @@ IEnumerable<UlcerIndexResult>
 
 ### UlcerIndexResult
 
-| name | type | notes
-| -- |-- |--
-| `Date` | DateTime | Date
-| `UI` | decimal | Ulcer Index
+**`Date`** _`DateTime`_ - Date from evaluated `TQuote`
+
+**`UI`** _`double`_ - Ulcer Index
 
 ### Utilities
 
+- [.Condense()]({{site.baseurl}}/utilities#condense)
 - [.Find(lookupDate)]({{site.baseurl}}/utilities#find-indicator-result-by-date)
 - [.RemoveWarmupPeriods()]({{site.baseurl}}/utilities#remove-warmup-periods)
 - [.RemoveWarmupPeriods(qty)]({{site.baseurl}}/utilities#remove-warmup-periods)
 
-See [Utilities and Helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
+See [Utilities and helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
 
-## Example
+## Chaining
+
+This indicator may be generated from any chain-enabled indicator or method.
 
 ```csharp
-// fetch historical quotes from your feed (your method)
-IEnumerable<Quote> quotes = GetHistoryFromFeed("SPY");
+// example
+var results = quotes
+    .Use(CandlePart.HL2)
+    .GetAlma(..);
+```
 
-// calculate UI(14)
-IEnumerable<UlcerIndexResult> results = quotes.GetUlcerIndex(14);
+Results can be further processed on `UI` with additional chain-enabled indicators.
+
+```csharp
+// example
+var results = quotes
+    .GetAlma(..)
+    .GetRsi(..);
 ```

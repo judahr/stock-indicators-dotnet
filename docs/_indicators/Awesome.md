@@ -1,34 +1,36 @@
 ---
 title: Awesome Oscillator (AO)
+description: Created by Bill Williams, the Awesome Oscillator (AO), also known as Super AO, is a measure of the gap between a fast and slow period modified moving average.
 permalink: /indicators/Awesome/
-layout: default
+image: /assets/charts/Awesome.png
+type: oscillator
+layout: indicator
 ---
 
 # {{ page.title }}
 
 Created by Bill Williams, the Awesome Oscillator (aka Super AO) is a measure of the gap between a fast and slow period modified moving average.
-[[Discuss] :speech_balloon:]({{site.github.repository_url}}/discussions/282 "Community discussion about this indicator")
+[[Discuss] &#128172;]({{site.github.repository_url}}/discussions/282 "Community discussion about this indicator")
 
-![image]({{site.baseurl}}/assets/charts/Awesome.png)
+![chart for {{page.title}}]({{site.baseurl}}{{page.image}})
 
 ```csharp
-// usage
+// C# usage syntax
 IEnumerable<AwesomeResult> results =
-  quotes.GetAwesome(fastPeriods, slowPeriods);  
+  quotes.GetAwesome(fastPeriods, slowPeriods);
 ```
 
 ## Parameters
 
-| name | type | notes
-| -- |-- |--
-| `fastPeriods` | int | Number of periods (`F`) for the faster moving average.  Must be greater than 0.  Default is 5.
-| `slowPeriods` | int | Number of periods (`S`) for the slower moving average.  Must be greater than `fastPeriods`.  Default is 34.
+**`fastPeriods`** _`int`_ - Number of periods (`F`) for the faster moving average.  Must be greater than 0.  Default is 5.
+
+**`slowPeriods`** _`int`_ - Number of periods (`S`) for the slower moving average.  Must be greater than `fastPeriods`.  Default is 34.
 
 ### Historical quotes requirements
 
-You must have at least `S` periods of `quotes`.
+You must have at least `S` periods of `quotes` to cover the warmup periods.
 
-`quotes` is an `IEnumerable<TQuote>` collection of historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
+`quotes` is a collection of generic `TQuote` historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
 
 ## Response
 
@@ -43,26 +45,37 @@ IEnumerable<AwesomeResult>
 
 ### AwesomeResult
 
-| name | type | notes
-| -- |-- |--
-| `Date` | DateTime | Date
-| `Oscillator` | decimal | Awesome Oscillator
-| `Normalized` | decimal | `100 × Oscillator ÷ (median price)`
+**`Date`** _`DateTime`_ - Date from evaluated `TQuote`
+
+**`Oscillator`** _`double`_ - Awesome Oscillator
+
+**`Normalized`** _`double`_ - `100 × Oscillator ÷ (median price)`
 
 ### Utilities
 
+- [.Condense()]({{site.baseurl}}/utilities#condense)
 - [.Find(lookupDate)]({{site.baseurl}}/utilities#find-indicator-result-by-date)
 - [.RemoveWarmupPeriods()]({{site.baseurl}}/utilities#remove-warmup-periods)
 - [.RemoveWarmupPeriods(qty)]({{site.baseurl}}/utilities#remove-warmup-periods)
 
-See [Utilities and Helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
+See [Utilities and helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
 
-## Example
+## Chaining
+
+This indicator may be generated from any chain-enabled indicator or method.
 
 ```csharp
-// fetch historical quotes from your feed (your method)
-IEnumerable<Quote> quotes = GetHistoryFromFeed("MSFT");
+// example
+var results = quotes
+    .Use(CandlePart.HL2)
+    .GetAwesome(..);
+```
 
-// calculate
-IEnumerable<AwesomeResult> results = quotes.GetAwesome(5,34);
+Results can be further processed on `Oscillator` with additional chain-enabled indicators.
+
+```csharp
+// example
+var results = quotes
+    .GetAwesome(..)
+    .GetRsi(..);
 ```

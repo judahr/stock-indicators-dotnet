@@ -1,11 +1,15 @@
-using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class DpoResult : ResultBase, IReusableResult
 {
-    [Serializable]
-    public class DpoResult : ResultBase
+    public DpoResult(DateTime date)
     {
-        public decimal? Sma { get; set; }
-        public decimal? Dpo { get; set; }
+        Date = date;
     }
+
+    public double? Sma { get; set; }
+    public double? Dpo { get; set; }
+
+    double? IReusableResult.Value => Dpo;
 }

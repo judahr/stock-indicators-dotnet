@@ -1,38 +1,40 @@
 ---
 title: Standard Deviation (volatility)
+description: Standard Deviation represents the volatility of historical financial market prices.  It is also known as Historical Volatility (HV). Z-Score is also returned.
 permalink: /indicators/StdDev/
-layout: default
+image: /assets/charts/StdDev.png
+type: numerical-analysis
+layout: indicator
 ---
 
 # {{ page.title }}
 
-[Standard Deviation](https://en.wikipedia.org/wiki/Standard_deviation) of Close price over a rolling lookback window.  Also known as Historical Volatility (HV).
-[[Discuss] :speech_balloon:]({{site.github.repository_url}}/discussions/239 "Community discussion about this indicator")
+[Standard Deviation](https://en.wikipedia.org/wiki/Standard_deviation) of price over a rolling lookback window.  Also known as Historical Volatility (HV).  Z-Score is also returned.
+[[Discuss] &#128172;]({{site.github.repository_url}}/discussions/239 "Community discussion about this indicator")
 
-![image]({{site.baseurl}}/assets/charts/StdDev.png)
+![chart for {{page.title}}]({{site.baseurl}}{{page.image}})
 
 ```csharp
-// usage
+// C# usage syntax
 IEnumerable<StdDevResult> results =
-  quotes.GetStdDev(lookbackPeriods);  
+  quotes.GetStdDev(lookbackPeriods);
 
-// usage with optional SMA of STDEV (shown above)
+// usage with optional SMA of SD (shown above)
 IEnumerable<StdDevResult> results =
-  quotes.GetStdDev(lookbackPeriods, smaPeriods);  
+  quotes.GetStdDev(lookbackPeriods, smaPeriods);
 ```
 
 ## Parameters
 
-| name | type | notes
-| -- |-- |--
-| `lookbackPeriods` | int | Number of periods (`N`) in the lookback period.  Must be greater than 1 to calculate; however we suggest a larger period for statistically appropriate sample size.
-| `smaPeriods` | int | Optional.  Number of periods in the moving average of `StdDev`.  Must be greater than 0, if specified.
+**`lookbackPeriods`** _`int`_ - Number of periods (`N`) in the lookback period.  Must be greater than 1 to calculate; however we suggest a larger period for statistically appropriate sample size.
+
+**`smaPeriods`** _`int`_ - Optional.  Number of periods in the moving average of `StdDev`.  Must be greater than 0, if specified.
 
 ### Historical quotes requirements
 
-You must have at least `N` periods of `quotes`.
+You must have at least `N` periods of `quotes` to cover the warmup periods.
 
-`quotes` is an `IEnumerable<TQuote>` collection of historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
+`quotes` is a collection of generic `TQuote` historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
 
 ## Response
 
@@ -47,28 +49,41 @@ IEnumerable<StdDevResult>
 
 ### StdDevResult
 
-| name | type | notes
-| -- |-- |--
-| `Date` | DateTime | Date
-| `StdDev` | decimal | Standard Deviation of Close price over `N` lookback periods
-| `Mean` | decimal | Mean value of Close price over `N` lookback periods
-| `ZScore` | decimal | Z-Score of current Close price (number of standard deviations from mean)
-| `StdDevSma` | decimal | Moving average (SMA) of STDDEV based on `smaPeriods` periods, if specified
+**`Date`** _`DateTime`_ - Date from evaluated `TQuote`
+
+**`StdDev`** _`double`_ - Standard Deviation of price
+
+**`Mean`** _`double`_ - Mean value of price
+
+**`ZScore`** _`double`_ - Z-Score of current price (number of standard deviations from mean)
+
+**`StdDevSma`** _`double`_ - Moving average (SMA) of `StdDev` based on `smaPeriods` periods, if specified
 
 ### Utilities
 
+- [.Condense()]({{site.baseurl}}/utilities#condense)
 - [.Find(lookupDate)]({{site.baseurl}}/utilities#find-indicator-result-by-date)
 - [.RemoveWarmupPeriods()]({{site.baseurl}}/utilities#remove-warmup-periods)
 - [.RemoveWarmupPeriods(qty)]({{site.baseurl}}/utilities#remove-warmup-periods)
 
-See [Utilities and Helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
+See [Utilities and helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
 
-## Example
+## Chaining
+
+This indicator may be generated from any chain-enabled indicator or method.
 
 ```csharp
-// fetch historical quotes from your feed (your method)
-IEnumerable<Quote> quotes = GetHistoryFromFeed("SPX");
+// example
+var results = quotes
+    .Use(CandlePart.HL2)
+    .GetStdDev(..);
+```
 
-// calculate 10-period Standard Deviation
-IEnumerable<StdDevResult> results = quotes.GetStdDev(10);
+Results can be further processed on `StdDev` with additional chain-enabled indicators.
+
+```csharp
+// example
+var results = quotes
+    .GetStdDev(..)
+    .GetSlope(..);
 ```

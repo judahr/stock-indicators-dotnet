@@ -1,33 +1,34 @@
 ---
 title: Elder-ray Index
+description: Created by Alexander Elder, the Elder-ray Index, also known as Bull and Bear Power, is an oscillator that depicts buying and selling pressure.  It compares current high/low prices against an Exponential Moving Average.
 permalink: /indicators/ElderRay/
-layout: default
+image: /assets/charts/ElderRay.png
+type: price-trend
+layout: indicator
 ---
 
 # {{ page.title }}
 
-Created by Alexander Elder, the [Elder-ray Index](https://www.investopedia.com/terms/e/elderray.asp), also known as Bull and Bear Power, depicts buying and selling pressure.
-[[Discuss] :speech_balloon:]({{site.github.repository_url}}/discussions/378 "Community discussion about this indicator")
+Created by Alexander Elder, the [Elder-ray Index](https://www.investopedia.com/terms/e/elderray.asp), also known as Bull and Bear Power, is an oscillator that depicts buying and selling pressure.  It compares current high/low prices against an Exponential Moving Average.
+[[Discuss] &#128172;]({{site.github.repository_url}}/discussions/378 "Community discussion about this indicator")
 
-![image]({{site.baseurl}}/assets/charts/ElderRay.png)
+![chart for {{page.title}}]({{site.baseurl}}{{page.image}})
 
 ```csharp
-// usage
+// C# usage syntax
 IEnumerable<ElderRayResult> results =
-  quotes.GetElderRay(lookbackPeriods);  
+  quotes.GetElderRay(lookbackPeriods);
 ```
 
 ## Parameters
 
-| name | type | notes
-| -- |-- |--
-| `lookbackPeriods` | int | Number of periods (`N`) for the underlying EMA evaluation.  Must be greater than 0.  Default is 13.
+**`lookbackPeriods`** _`int`_ - Number of periods (`N`) for the underlying EMA evaluation.  Must be greater than 0.  Default is 13.
 
 ### Historical quotes requirements
 
-You must have at least `2×N` or `N+100` periods of `quotes`, whichever is more.  Since this uses a smoothing technique, we recommend you use at least `N+250` data points prior to the intended usage date for better precision.
+You must have at least `2×N` or `N+100` periods of `quotes`, whichever is more, to cover the convergence periods.  Since this uses a smoothing technique, we recommend you use at least `N+250` data points prior to the intended usage date for better precision.
 
-`quotes` is an `IEnumerable<TQuote>` collection of historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
+`quotes` is a collection of generic `TQuote` historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
 
 ## Response
 
@@ -40,32 +41,36 @@ IEnumerable<ElderRayResult>
 - It does not return a single incremental indicator value.
 - The first `N-1` periods will have `null` indicator values since there's not enough data to calculate.
 
-:hourglass: **Convergence Warning**: The first `N+100` periods will have decreasing magnitude, convergence-related precision errors that can be as high as ~5% deviation in indicator values for earlier periods.
+>&#9886; **Convergence warning**: The first `N+100` periods will have decreasing magnitude, convergence-related precision errors that can be as high as ~5% deviation in indicator values for earlier periods.
 
 ### ElderRayResult
 
-| name | type | notes
-| -- |-- |--
-| `Date` | DateTime | Date
-| `Ema` | decimal | Exponential moving average of Close price
-| `BullPower` | decimal | Bull Power
-| `BearPower` | decimal | Bear Power
+**`Date`** _`DateTime`_ - Date from evaluated `TQuote`
+
+**`Ema`** _`double`_ - Exponential moving average
+
+**`BullPower`** _`double`_ - Bull Power
+
+**`BearPower`** _`double`_ - Bear Power
 
 ### Utilities
 
+- [.Condense()]({{site.baseurl}}/utilities#condense)
 - [.Find(lookupDate)]({{site.baseurl}}/utilities#find-indicator-result-by-date)
 - [.RemoveWarmupPeriods()]({{site.baseurl}}/utilities#remove-warmup-periods)
 - [.RemoveWarmupPeriods(qty)]({{site.baseurl}}/utilities#remove-warmup-periods)
 
-See [Utilities and Helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
+See [Utilities and helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
 
-## Example
+## Chaining
+
+Results can be further processed on `(BullPower+BearPower)` with additional chain-enabled indicators.
 
 ```csharp
-// fetch historical quotes from your feed (your method)
-IEnumerable<Quote> quotes = GetHistoryFromFeed("SPY");
-
-// calculate ElderRay(13)
-IEnumerable<ElderRayResult> results
-  = quotes.GetElderRay(13);
+// example
+var results = quotes
+    .GetElderRay(..)
+    .GetEma(..);
 ```
+
+This indicator must be generated from `quotes` and **cannot** be generated from results of another chain-enabled indicator or method.

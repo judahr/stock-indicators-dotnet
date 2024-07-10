@@ -1,18 +1,20 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class ChandelierResult : ResultBase, IReusableResult
 {
-    [Serializable]
-    public class ChandelierResult : ResultBase
+    public ChandelierResult(DateTime date)
     {
-        public decimal? ChandelierExit { get; set; }
+        Date = date;
     }
 
-    [SuppressMessage("Naming", "CA1720:Identifier contains type name", Justification = "Not a problem")]
-    public enum ChandelierType
-    {
-        Long = 0,
-        Short = 1
-    }
+    public double? ChandelierExit { get; set; }
+
+    double? IReusableResult.Value => ChandelierExit;
+}
+
+public enum ChandelierType
+{
+    Long = 0,
+    Short = 1
 }

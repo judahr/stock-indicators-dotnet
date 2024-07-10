@@ -1,11 +1,14 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class CciResult : ResultBase, IReusableResult
 {
-    [Serializable]
-    public class CciResult : ResultBase
+    public CciResult(DateTime date)
     {
-        internal decimal? Tp { get; set; }
-        public decimal? Cci { get; set; }
+        Date = date;
     }
+
+    public double? Cci { get; set; }
+
+    double? IReusableResult.Value => Cci;
 }

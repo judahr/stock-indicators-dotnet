@@ -1,10 +1,14 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class T3Result : ResultBase, IReusableResult
 {
-    [Serializable]
-    public class T3Result : ResultBase
+    public T3Result(DateTime date)
     {
-        public decimal? T3 { get; set; }
+        Date = date;
     }
+
+    public double? T3 { get; set; }
+
+    double? IReusableResult.Value => T3;
 }

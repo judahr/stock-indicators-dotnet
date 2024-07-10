@@ -1,67 +1,83 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Skender.Stock.Indicators;
+namespace Tests.Indicators;
 
-namespace Internal.Tests
+[TestClass]
+public class HeikinAshiTests : TestBase
 {
-    [TestClass]
-    public class HeikinAshi : TestBase
+    [TestMethod]
+    public void Standard()
     {
+        List<HeikinAshiResult> results = quotes
+            .GetHeikinAshi()
+            .ToList();
 
-        [TestMethod]
-        public void Standard()
+        // proper quantities
+        Assert.AreEqual(502, results.Count);
+
+        // sample value
+        HeikinAshiResult r = results[501];
+        Assert.AreEqual(241.3018m, r.Open.Round(4));
+        Assert.AreEqual(245.54m, r.High.Round(4));
+        Assert.AreEqual(241.3018m, r.Low.Round(4));
+        Assert.AreEqual(244.6525m, r.Close.Round(4));
+        Assert.AreEqual(147031456m, r.Volume);
+    }
+
+    [TestMethod]
+    public void UseAsQuotes()
+    {
+        IEnumerable<HeikinAshiResult> haQuotes = quotes.GetHeikinAshi();
+        IEnumerable<SmaResult> haSma = haQuotes.GetSma(5);
+        Assert.AreEqual(498, haSma.Count(x => x.Sma != null));
+    }
+
+    [TestMethod]
+    public void ToQuotes()
+    {
+        List<HeikinAshiResult> results = quotes
+            .GetHeikinAshi()
+            .ToList();
+
+        List<Quote> haQuotes = results
+            .ToQuotes()
+            .ToList();
+
+        for (int i = 0; i < results.Count; i++)
         {
+            HeikinAshiResult r = results[i];
+            Quote q = haQuotes[i];
 
-            List<HeikinAshiResult> results = quotes.GetHeikinAshi().ToList();
-
-            // assertions
-
-            // should always be the same number of results as there is quotes
-            Assert.AreEqual(502, results.Count);
-
-            // sample value
-            HeikinAshiResult r = results[501];
-            Assert.AreEqual(241.3018m, Math.Round(r.Open, 4));
-            Assert.AreEqual(245.54m, Math.Round(r.High, 4));
-            Assert.AreEqual(241.3018m, Math.Round(r.Low, 4));
-            Assert.AreEqual(244.6525m, Math.Round(r.Close, 4));
-            Assert.AreEqual(147031456m, r.Volume);
+            Assert.AreEqual(r.Date, q.Date);
+            Assert.AreEqual(r.Open, q.Open);
+            Assert.AreEqual(r.High, q.High);
+            Assert.AreEqual(r.Low, q.Low);
+            Assert.AreEqual(r.Close, q.Close);
+            Assert.AreEqual(r.Volume, q.Volume);
         }
+    }
 
-        [TestMethod]
-        public void ConvertToQuotes()
-        {
-            List<Quote> newQuotes = quotes.GetHeikinAshi()
-                .ConvertToQuotes()
-                .ToList();
+    [TestMethod]
+    public void BadData()
+    {
+        List<HeikinAshiResult> r = badQuotes
+            .GetHeikinAshi()
+            .ToList();
 
-            // assertions
+        Assert.AreEqual(502, r.Count);
+    }
 
-            Assert.AreEqual(502, newQuotes.Count);
+    [TestMethod]
+    public void NoQuotes()
+    {
+        List<HeikinAshiResult> r0 = noquotes
+            .GetHeikinAshi()
+            .ToList();
 
-            Quote q = newQuotes[501];
-            Assert.AreEqual(241.3018m, Math.Round(q.Open, 4));
-            Assert.AreEqual(245.54m, Math.Round(q.High, 4));
-            Assert.AreEqual(241.3018m, Math.Round(q.Low, 4));
-            Assert.AreEqual(244.6525m, Math.Round(q.Close, 4));
-            Assert.AreEqual(147031456m, q.Volume);
-        }
+        Assert.AreEqual(0, r0.Count);
 
-        [TestMethod]
-        public void BadData()
-        {
-            IEnumerable<HeikinAshiResult> r = Indicator.GetHeikinAshi(badQuotes);
-            Assert.AreEqual(502, r.Count());
-        }
+        List<HeikinAshiResult> r1 = onequote
+            .GetHeikinAshi()
+            .ToList();
 
-        [TestMethod]
-        public void Exceptions()
-        {
-            // insufficient quotes
-            Assert.ThrowsException<BadQuotesException>(() =>
-                Indicator.GetHeikinAshi(TestData.GetDefault(1)));
-        }
+        Assert.AreEqual(1, r1.Count);
     }
 }

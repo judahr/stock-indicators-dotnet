@@ -1,11 +1,15 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class ObvResult : ResultBase, IReusableResult
 {
-    [Serializable]
-    public class ObvResult : ResultBase
+    public ObvResult(DateTime date)
     {
-        public decimal Obv { get; set; }
-        public decimal? ObvSma { get; set; }
+        Date = date;
     }
+
+    public double Obv { get; set; }
+    public double? ObvSma { get; set; }
+
+    double? IReusableResult.Value => Obv;
 }

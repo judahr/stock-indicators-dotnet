@@ -1,33 +1,34 @@
 ---
-title: Hurst Exponent (Preview)
+title: Hurst Exponent
+description: Hurst Exponent (H) with Rescaled Range Analysis is a random-walk path analysis that measures trending and mean-reverting tendencies of incremental return values.  When H is greater than 0.5 it depicts trending.  When H is less than 0.5 it is is more likely to revert to the mean.  When H is around 0.5 it represents a random walk.
 permalink: /indicators/Hurst/
-layout: default
+image: /assets/charts/Hurst.png
+type: price-characteristic
+layout: indicator
 ---
 
 # {{ page.title }}
 
-The [Hurst Exponent](https://en.wikipedia.org/wiki/Hurst_exponent) is a [random-walk](https://en.wikipedia.org/wiki/Random_walk) path analysis that measures trending and mean-reverting tendencies of incremental return values.  When `H` is greater than 0.5 it depicts trending.  When `H` is less than 0.5 it is is more likely to revert to the mean.  When `H` is around 0.5 it represents a random walk.
-[[Discuss] :speech_balloon:]({{site.github.repository_url}}/discussions/477 "Community discussion about this indicator")
+The [Hurst Exponent](https://en.wikipedia.org/wiki/Hurst_exponent) (`H`) is part of a Rescaled Range Analysis, a [random-walk](https://en.wikipedia.org/wiki/Random_walk) path analysis that measures trending and mean-reverting tendencies of incremental return values.  When `H` is greater than 0.5 it depicts trending.  When `H` is less than 0.5 it is is more likely to revert to the mean.  When `H` is around 0.5 it represents a random walk.
+[[Discuss] &#128172;]({{site.github.repository_url}}/discussions/477 "Community discussion about this indicator")
 
-![image]({{site.baseurl}}/assets/charts/Hurst.png)
+![chart for {{page.title}}]({{site.baseurl}}{{page.image}})
 
 ```csharp
-// usage
+// C# usage syntax
 IEnumerable<HurstResult> results =
-  quotes.GetHurst(lookbackPeriods);  
+  quotes.GetHurst(lookbackPeriods);
 ```
 
 ## Parameters
 
-| name | type | notes
-| -- |-- |--
-| `lookbackPeriods` | int | Number of periods (`N`) in the Hurst Analysis.  Must be greater than 100.  Default is 100.
+**`lookbackPeriods`** _`int`_ - Number of periods (`N`) in the Hurst Analysis.  Must be greater than 20.  Default is 100.
 
 ### Historical quotes requirements
 
-You must have at least `N+1` periods of `quotes`.
+You must have at least `N+1` periods of `quotes` to cover the warmup periods.
 
-`quotes` is an `IEnumerable<TQuote>` collection of historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
+`quotes` is a collection of generic `TQuote` historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
 
 ## Response
 
@@ -42,26 +43,35 @@ IEnumerable<HurstResult>
 
 ### HurstResult
 
-| name | type | notes
-| -- |-- |--
-| `Date` | DateTime | Date
-| `HurstExponent` | double | Hurst Exponent (`H`)
+**`Date`** _`DateTime`_ - Date from evaluated `TQuote`
+
+**`HurstExponent`** _`double`_ - Hurst Exponent (`H`)
 
 ### Utilities
 
-- [.ConvertToQuotes()]({{site.baseurl}}/utilities#convert-to-quotes)
+- [.Condense()]({{site.baseurl}}/utilities#condense)
 - [.Find(lookupDate)]({{site.baseurl}}/utilities#find-indicator-result-by-date)
 - [.RemoveWarmupPeriods()]({{site.baseurl}}/utilities#remove-warmup-periods)
 - [.RemoveWarmupPeriods(qty)]({{site.baseurl}}/utilities#remove-warmup-periods)
 
-See [Utilities and Helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
+See [Utilities and helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
 
-## Example
+## Chaining
+
+This indicator may be generated from any chain-enabled indicator or method.
 
 ```csharp
-// fetch historical quotes from your feed (your method)
-IEnumerable<Quote> quotes = GetHistoryFromFeed("SPY");
+// example
+var results = quotes
+    .Use(CandlePart.HLC3)
+    .GetHurst(..);
+```
 
-// calculate 20-period Hurst
-IEnumerable<HurstResult> results = quotes.GetHurst(20);
+Results can be further processed on `HurstExponent` with additional chain-enabled indicators.
+
+```csharp
+// example
+var results = quotes
+    .GetHurst(..)
+    .GetSlope(..);
 ```

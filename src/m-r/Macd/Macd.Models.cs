@@ -1,16 +1,20 @@
-using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class MacdResult : ResultBase, IReusableResult
 {
-    [Serializable]
-    public class MacdResult : ResultBase
+    public MacdResult(DateTime date)
     {
-        public decimal? Macd { get; set; }
-        public decimal? Signal { get; set; }
-        public decimal? Histogram { get; set; }
-
-        // extra interim data
-        public decimal? FastEma { get; set; }
-        public decimal? SlowEma { get; set; }
+        Date = date;
     }
+
+    public double? Macd { get; set; }
+    public double? Signal { get; set; }
+    public double? Histogram { get; set; }
+
+    // extra interim data
+    public double? FastEma { get; set; }
+    public double? SlowEma { get; set; }
+
+    double? IReusableResult.Value => Macd;
 }

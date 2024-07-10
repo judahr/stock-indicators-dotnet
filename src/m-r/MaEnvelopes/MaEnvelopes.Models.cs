@@ -1,12 +1,14 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class MaEnvelopeResult : ResultBase
 {
-    [Serializable]
-    public class MaEnvelopeResult : ResultBase
+    public MaEnvelopeResult(DateTime date)
     {
-        public decimal? Centerline { get; set; }
-        public decimal? UpperEnvelope { get; set; }
-        public decimal? LowerEnvelope { get; set; }
+        Date = date;
     }
+
+    public double? Centerline { get; set; }
+    public double? UpperEnvelope { get; set; }
+    public double? LowerEnvelope { get; set; }
 }

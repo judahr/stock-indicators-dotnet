@@ -1,19 +1,23 @@
-using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+/// <include file='./info.xml' path='info/type[@name="Results"]/*' />
+///
+[Serializable]
+public sealed class StochResult : ResultBase, IReusableResult
 {
-    /// <include file='./info.xml' path='indicator/type[@name="Results"]/*' />
-    /// 
-    [Serializable]
-    public class StochResult : ResultBase
+    public StochResult(DateTime date)
     {
-        public decimal? Oscillator { get; set; }
-        public decimal? Signal { get; set; }
-        public decimal? PercentJ { get; set; }
-
-        // aliases
-        public decimal? K => Oscillator;
-        public decimal? D => Signal;
-        public decimal? J => PercentJ;
+        Date = date;
     }
+
+    public double? Oscillator { get; set; }
+    public double? Signal { get; set; }
+    public double? PercentJ { get; set; }
+
+    // aliases
+    public double? K => Oscillator;
+    public double? D => Signal;
+    public double? J => PercentJ;
+
+    double? IReusableResult.Value => Oscillator;
 }

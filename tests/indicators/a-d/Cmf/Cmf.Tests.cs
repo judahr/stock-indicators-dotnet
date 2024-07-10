@@ -1,76 +1,105 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Skender.Stock.Indicators;
+namespace Tests.Indicators;
 
-namespace Internal.Tests
+[TestClass]
+public class CmfTests : TestBase
 {
-    [TestClass]
-    public class Cmf : TestBase
+    [TestMethod]
+    public void Standard()
     {
+        List<CmfResult> results = quotes
+            .GetCmf(20)
+            .ToList();
 
-        [TestMethod]
-        public void Standard()
-        {
-            List<CmfResult> results = quotes.GetCmf(20).ToList();
+        // proper quantities
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(483, results.Count(x => x.Cmf != null));
 
-            // assertions
+        // sample values
+        CmfResult r1 = results[49];
+        Assert.AreEqual(0.5468, r1.MoneyFlowMultiplier.Round(4));
+        Assert.AreEqual(55609259, r1.MoneyFlowVolume.Round(2));
+        Assert.AreEqual(0.350596, r1.Cmf.Round(6));
 
-            // proper quantities
-            Assert.AreEqual(502, results.Count);
-            Assert.AreEqual(483, results.Where(x => x.Cmf != null).Count());
+        CmfResult r2 = results[249];
+        Assert.AreEqual(0.7778, r2.MoneyFlowMultiplier.Round(4));
+        Assert.AreEqual(36433792.89, r2.MoneyFlowVolume.Round(2));
+        Assert.AreEqual(-0.040226, r2.Cmf.Round(6));
 
-            // sample values
-            CmfResult r1 = results[49];
-            Assert.AreEqual(0.5468m, Math.Round(r1.MoneyFlowMultiplier, 4));
-            Assert.AreEqual(55609259m, Math.Round(r1.MoneyFlowVolume, 2));
-            Assert.AreEqual(0.350596m, Math.Round((decimal)r1.Cmf, 6));
-
-            CmfResult r2 = results[249];
-            Assert.AreEqual(0.7778m, Math.Round(r2.MoneyFlowMultiplier, 4));
-            Assert.AreEqual(36433792.89m, Math.Round(r2.MoneyFlowVolume, 2));
-            Assert.AreEqual(-0.040226m, Math.Round((decimal)r2.Cmf, 6));
-
-            CmfResult r3 = results[501];
-            Assert.AreEqual(0.8052m, Math.Round(r3.MoneyFlowMultiplier, 4));
-            Assert.AreEqual(118396116.25m, Math.Round(r3.MoneyFlowVolume, 2));
-            Assert.AreEqual(-0.123754m, Math.Round((decimal)r3.Cmf, 6));
-        }
-
-        [TestMethod]
-        public void BadData()
-        {
-            IEnumerable<CmfResult> r = Indicator.GetCmf(badQuotes, 15);
-            Assert.AreEqual(502, r.Count());
-        }
-
-        [TestMethod]
-        public void Removed()
-        {
-            List<CmfResult> results = quotes.GetCmf(20)
-                .RemoveWarmupPeriods()
-                .ToList();
-
-            // assertions
-            Assert.AreEqual(502 - 19, results.Count);
-
-            CmfResult last = results.LastOrDefault();
-            Assert.AreEqual(0.8052m, Math.Round(last.MoneyFlowMultiplier, 4));
-            Assert.AreEqual(118396116.25m, Math.Round(last.MoneyFlowVolume, 2));
-            Assert.AreEqual(-0.123754m, Math.Round((decimal)last.Cmf, 6));
-        }
-
-        [TestMethod]
-        public void Exceptions()
-        {
-            // bad lookback period
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
-                Indicator.GetCmf(quotes, 0));
-
-            // insufficient quotes
-            Assert.ThrowsException<BadQuotesException>(() =>
-                Indicator.GetCmf(TestData.GetDefault(20), 20));
-        }
+        CmfResult r3 = results[501];
+        Assert.AreEqual(0.8052, r3.MoneyFlowMultiplier.Round(4));
+        Assert.AreEqual(118396116.25, r3.MoneyFlowVolume.Round(2));
+        Assert.AreEqual(-0.123754, r3.Cmf.Round(6));
     }
+
+    [TestMethod]
+    public void Chainor()
+    {
+        List<SmaResult> results = quotes
+            .GetCmf(20)
+            .GetSma(10)
+            .ToList();
+
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(474, results.Count(x => x.Sma != null));
+    }
+
+    [TestMethod]
+    public void BadData()
+    {
+        List<CmfResult> r = badQuotes
+            .GetCmf(15)
+            .ToList();
+
+        Assert.AreEqual(502, r.Count);
+        Assert.AreEqual(0, r.Count(x => x.Cmf is double and double.NaN));
+    }
+
+    [TestMethod]
+    public void BigData()
+    {
+        List<CmfResult> r = bigQuotes
+            .GetCmf(150)
+            .ToList();
+
+        Assert.AreEqual(1246, r.Count);
+    }
+
+    [TestMethod]
+    public void NoQuotes()
+    {
+        List<CmfResult> r0 = noquotes
+            .GetCmf()
+            .ToList();
+
+        Assert.AreEqual(0, r0.Count);
+
+        List<CmfResult> r1 = onequote
+            .GetCmf()
+            .ToList();
+
+        Assert.AreEqual(1, r1.Count);
+    }
+
+    [TestMethod]
+    public void Removed()
+    {
+        List<CmfResult> results = quotes
+            .GetCmf(20)
+            .RemoveWarmupPeriods()
+            .ToList();
+
+        // assertions
+        Assert.AreEqual(502 - 19, results.Count);
+
+        CmfResult last = results.LastOrDefault();
+        Assert.AreEqual(0.8052, last.MoneyFlowMultiplier.Round(4));
+        Assert.AreEqual(118396116.25, last.MoneyFlowVolume.Round(2));
+        Assert.AreEqual(-0.123754, last.Cmf.Round(6));
+    }
+
+    // bad lookback period
+    [TestMethod]
+    public void Exceptions()
+        => Assert.ThrowsException<ArgumentOutOfRangeException>(()
+            => quotes.GetCmf(0));
 }

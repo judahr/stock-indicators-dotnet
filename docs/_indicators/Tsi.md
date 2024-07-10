@@ -1,35 +1,39 @@
 ---
 title: True Strength Index (TSI)
+description: Created by William Blau, the True Strength Index is a momentum oscillator that uses a series of exponential moving averages to depicts trends in price changes.
+
 permalink: /indicators/Tsi/
-layout: default
+image: /assets/charts/Tsi.png
+type: price-characteristic
+layout: indicator
 ---
 
 # {{ page.title }}
 
-Created by William Blau, the [True Strength Index](https://en.wikipedia.org/wiki/True_strength_index) is a momentum oscillator that depicts trends in price changes.
-[[Discuss] :speech_balloon:]({{site.github.repository_url}}/discussions/300 "Community discussion about this indicator")
+Created by William Blau, the [True Strength Index](https://en.wikipedia.org/wiki/True_strength_index) is a momentum oscillator that uses a series of exponential moving averages to depicts trends in price changes.
+[[Discuss] &#128172;]({{site.github.repository_url}}/discussions/300 "Community discussion about this indicator")
 
-![image]({{site.baseurl}}/assets/charts/Tsi.png)
+![chart for {{page.title}}]({{site.baseurl}}{{page.image}})
 
 ```csharp
-// usage
-IEnumerable<TsiResult> results = 
-  quotes.GetTsi(lookbackPeriods, smoothPeriods, signalPeriods);  
+// C# usage syntax
+IEnumerable<TsiResult> results =
+  quotes.GetTsi(lookbackPeriods, smoothPeriods, signalPeriods);
 ```
 
 ## Parameters
 
-| name | type | notes
-| -- |-- |--
-| `lookbackPeriods` | int | Number of periods (`N`) for the first EMA.  Must be greater than 0.  Default is 25.
-| `smoothPeriods` | int | Number of periods (`M`) for the second smoothing.  Must be greater than 0.  Default is 13.
-| `signalPeriods` | int | Number of periods (`S`) in the TSI moving average.  Must be greater than or equal to 0.  Default is 7.
+**`lookbackPeriods`** _`int`_ - Number of periods (`N`) for the first EMA.  Must be greater than 0.  Default is 25.
+
+**`smoothPeriods`** _`int`_ - Number of periods (`M`) for the second smoothing.  Must be greater than 0.  Default is 13.
+
+**`signalPeriods`** _`int`_ - Number of periods (`S`) in the TSI moving average.  Must be greater than or equal to 0.  Default is 7.
 
 ### Historical quotes requirements
 
-You must have at least `N+M+100` periods of `quotes`.  Since this uses a two EMA smoothing techniques, we recommend you use at least `N+M+250` data points prior to the intended usage date for better precision.
+You must have at least `N+M+100` periods of `quotes` to cover the convergence periods.  Since this uses a two EMA smoothing techniques, we recommend you use at least `N+M+250` data points prior to the intended usage date for better precision.
 
-`quotes` is an `IEnumerable<TQuote>` collection of historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
+`quotes` is a collection of generic `TQuote` historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
 
 ## Response
 
@@ -43,30 +47,41 @@ IEnumerable<TsiResult>
 - The first `N+M-1` periods will have `null` values since there's not enough data to calculate.
 - `Signal` will be `null` for all periods if `signalPeriods=0`.
 
-:warning: **Warning**: The first `N+M+250` periods will have decreasing magnitude, convergence-related precision errors that can be as high as ~5% deviation in indicator values for earlier periods.
+>&#9886; **Convergence warning**: The first `N+M+250` periods will have decreasing magnitude, convergence-related precision errors that can be as high as ~5% deviation in indicator values for earlier periods.
 
 ### TsiResult
 
-| name | type | notes
-| -- |-- |--
-| `Date` | DateTime | Date
-| `Tsi` | decimal | True Strength Index
-| `Signal` | decimal | Signal line (EMA of TSI)
+**`Date`** _`DateTime`_ - Date from evaluated `TQuote`
+
+**`Tsi`** _`double`_ - True Strength Index
+
+**`Signal`** _`double`_ - Signal line (EMA of TSI)
 
 ### Utilities
 
+- [.Condense()]({{site.baseurl}}/utilities#condense)
 - [.Find(lookupDate)]({{site.baseurl}}/utilities#find-indicator-result-by-date)
 - [.RemoveWarmupPeriods()]({{site.baseurl}}/utilities#remove-warmup-periods)
 - [.RemoveWarmupPeriods(qty)]({{site.baseurl}}/utilities#remove-warmup-periods)
 
-See [Utilities and Helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
+See [Utilities and helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
 
-## Example
+## Chaining
+
+This indicator may be generated from any chain-enabled indicator or method.
 
 ```csharp
-// fetch historical quotes from your feed (your method)
-IEnumerable<Quote> quotes = GetHistoryFromFeed("MSFT");
+// example
+var results = quotes
+    .Use(CandlePart.HL2)
+    .GetTsi(..);
+```
 
-// calculate 20-period TSI
-IEnumerable<TsiResult> results = quotes.GetTsi(25,13,7);
+Results can be further processed on `Tsi` with additional chain-enabled indicators.
+
+```csharp
+// example
+var results = quotes
+    .GetTsi(..)
+    .GetSlope(..);
 ```

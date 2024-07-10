@@ -1,12 +1,16 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class TrixResult : ResultBase, IReusableResult
 {
-    [Serializable]
-    public class TrixResult : ResultBase
+    public TrixResult(DateTime date)
     {
-        public decimal? Ema3 { get; set; }
-        public decimal? Trix { get; set; }
-        public decimal? Signal { get; set; }
+        Date = date;
     }
+
+    public double? Ema3 { get; set; }
+    public double? Trix { get; set; }
+    public double? Signal { get; set; }
+
+    double? IReusableResult.Value => Trix;
 }

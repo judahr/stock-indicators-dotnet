@@ -1,11 +1,15 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class TsiResult : ResultBase, IReusableResult
 {
-    [Serializable]
-    public class TsiResult : ResultBase
+    public TsiResult(DateTime date)
     {
-        public decimal? Tsi { get; set; }
-        public decimal? Signal { get; set; }
+        Date = date;
     }
+
+    public double? Tsi { get; set; }
+    public double? Signal { get; set; }
+
+    double? IReusableResult.Value => Tsi;
 }

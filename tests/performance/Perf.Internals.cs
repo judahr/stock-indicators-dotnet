@@ -1,36 +1,21 @@
-﻿using System.Linq;
-using BenchmarkDotNet.Attributes;
-using Internal.Tests;
-using Skender.Stock.Indicators;
+namespace Tests.Performance;
 
-namespace Tests.Performance
+// INTERNAL FUNCTIONS
+
+public class InternalsPerformance
 {
-    // INTERNAL FUNCTIONS
+    [Params(20, 50, 250, 1000)]
+    public int Periods;
 
-    [MarkdownExporterAttribute.GitHub]
-    public class InternalsPerformance
-    {
+    private double[] values;
 
-        // standard deviation
+    // standard deviation
+    [GlobalSetup(Targets = [nameof(StdDev)])]
+    public void Setup()
+        => values = TestData.GetLongish(Periods)
+            .Select(x => (double)x.Close)
+            .ToArray();
 
-        private double[] values;
-
-        [Params(20, 50, 250, 1000)]
-        public int Periods;
-
-        [GlobalSetup(Targets = new[] { nameof(StdDev) })]
-        public void Setup()
-        {
-            values = TestData.GetLongish(Periods)
-                .Select(x => (double)x.Close)
-                .ToArray();
-        }
-
-        [Benchmark]
-        public object StdDev()
-        {
-            return Functions.StdDev(values);
-        }
-
-    }
+    [Benchmark]
+    public object StdDev() => values.StdDev();
 }

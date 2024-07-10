@@ -1,11 +1,16 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class HtlResult : ResultBase, IReusableResult
 {
-    [Serializable]
-    public class HtlResult : ResultBase
+    public HtlResult(DateTime date)
     {
-        public decimal? Trendline { get; set; }
-        public decimal? SmoothPrice { get; set; }
+        Date = date;
     }
+
+    public int? DcPeriods { get; set; }
+    public double? Trendline { get; set; }
+    public double? SmoothPrice { get; set; }
+
+    double? IReusableResult.Value => Trendline;
 }

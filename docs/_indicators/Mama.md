@@ -1,34 +1,36 @@
 ---
 title: MESA Adaptive Moving Average (MAMA)
+description: Created by John Ehlers, the MAMA indicator is a 5-period adaptive moving average of high/low price that uses classic electrical radio-frequency signal processing algorithms to reduce noise.
 permalink: /indicators/Mama/
-layout: default
+image: /assets/charts/Mama.png
+type: moving-average
+layout: indicator
 ---
 
 # {{ page.title }}
 
-Created by John Ehlers, the [MAMA](http://mesasoftware.com/papers/MAMA.pdf) indicator is a 5-period adaptive moving average of high/low price.
-[[Discuss] :speech_balloon:]({{site.github.repository_url}}/discussions/211 "Community discussion about this indicator")
+Created by John Ehlers, the [MAMA](https://mesasoftware.com/papers/MAMA.pdf) indicator is a 5-period adaptive moving average of high/low price that uses classic electrical radio-frequency signal processing algorithms to reduce noise.
+[[Discuss] &#128172;]({{site.github.repository_url}}/discussions/211 "Community discussion about this indicator")
 
-![image]({{site.baseurl}}/assets/charts/Mama.png)
+![chart for {{page.title}}]({{site.baseurl}}{{page.image}})
 
 ```csharp
-// usage
+// C# usage syntax
 IEnumerable<MamaResult> results =
-  quotes.GetMama(fastLimit, slowLimit);  
+  quotes.GetMama(fastLimit, slowLimit);
 ```
 
 ## Parameters
 
-| name | type | notes
-| -- |-- |--
-| `fastLimit` | decimal | Fast limit threshold.  Must be greater than `slowLimit` and less than 1.  Default is 0.5.
-| `slowLimit` | decimal | Slow limit threshold.  Must be greater than 0.  Default is 0.05.
+**`fastLimit`** _`double`_ - Fast limit threshold.  Must be greater than `slowLimit` and less than 1.  Default is 0.5.
+
+**`slowLimit`** _`double`_ - Slow limit threshold.  Must be greater than 0.  Default is 0.05.
 
 ### Historical quotes requirements
 
-Since this indicator has a warmup period, you must have at least `50` periods of `quotes`.
+You must have at least `50` periods of `quotes` to cover the warmup periods.
 
-`quotes` is an `IEnumerable<TQuote>` collection of historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
+`quotes` is a collection of generic `TQuote` historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
 
 ## Response
 
@@ -41,30 +43,41 @@ IEnumerable<MamaResult>
 - It does not return a single incremental indicator value.
 - The first `5` periods will have `null` values for `Mama` since there's not enough data to calculate.
 
-:hourglass: **Convergence Warning**: The first `50` periods will have decreasing magnitude, convergence-related precision errors that can be as high as ~5% deviation in indicator values for earlier periods.
+>&#9886; **Convergence warning**: The first `50` periods will have decreasing magnitude, convergence-related precision errors that can be as high as ~5% deviation in indicator values for earlier periods.
 
 ### MamaResult
 
-| name | type | notes
-| -- |-- |--
-| `Date` | DateTime | Date
-| `Mama` | decimal | MESA adaptive moving average (MAMA)
-| `Fama` | decimal | Following adaptive moving average (FAMA)
+**`Date`** _`DateTime`_ - Date from evaluated `TQuote`
+
+**`Mama`** _`decimal`_ - MESA adaptive moving average (MAMA)
+
+**`Fama`** _`decimal`_ - Following adaptive moving average (FAMA)
 
 ### Utilities
 
+- [.Condense()]({{site.baseurl}}/utilities#condense)
 - [.Find(lookupDate)]({{site.baseurl}}/utilities#find-indicator-result-by-date)
 - [.RemoveWarmupPeriods()]({{site.baseurl}}/utilities#remove-warmup-periods)
 - [.RemoveWarmupPeriods(qty)]({{site.baseurl}}/utilities#remove-warmup-periods)
 
-See [Utilities and Helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
+See [Utilities and helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
 
-## Example
+## Chaining
+
+This indicator may be generated from any chain-enabled indicator or method.
 
 ```csharp
-// fetch historical quotes from your feed (your method)
-IEnumerable<Quote> quotes = GetHistoryFromFeed("MSFT");
+// example
+var results = quotes
+    .Use(CandlePart.HL2)
+    .GetMama(..);
+```
 
-// calculate Mama(0.5,0.05)
-IEnumerable<MamaResult> results = quotes.GetMama(0.5,0.05);
+Results can be further processed on `Mama` with additional chain-enabled indicators.
+
+```csharp
+// example
+var results = quotes
+    .GetMama(..)
+    .GetRsi(..);
 ```

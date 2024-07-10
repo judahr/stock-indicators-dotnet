@@ -1,116 +1,144 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Skender.Stock.Indicators;
+namespace Tests.Indicators;
 
-namespace Internal.Tests
+[TestClass]
+public class SuperTrendTests : TestBase
 {
-    [TestClass]
-    public class SuperTrend : TestBase
+    [TestMethod]
+    public void Standard()
     {
+        int lookbackPeriods = 14;
+        double multiplier = 3;
 
-        [TestMethod]
-        public void Standard()
-        {
-            int lookbackPeriods = 14;
-            decimal multiplier = 3;
+        List<SuperTrendResult> results = quotes
+            .GetSuperTrend(lookbackPeriods, multiplier)
+            .ToList();
 
-            List<SuperTrendResult> results = quotes.GetSuperTrend(lookbackPeriods, multiplier)
-                .ToList();
+        // proper quantities
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(488, results.Count(x => x.SuperTrend != null));
 
-            // assertions
+        // sample values
+        SuperTrendResult r13 = results[13];
+        Assert.AreEqual(null, r13.SuperTrend);
+        Assert.AreEqual(null, r13.UpperBand);
+        Assert.AreEqual(null, r13.LowerBand);
 
-            // proper quantities
-            // should always be the same number of results as there is quotes
-            Assert.AreEqual(502, results.Count);
-            Assert.AreEqual(489, results.Where(x => x.SuperTrend != null).Count());
+        SuperTrendResult r14 = results[14];
+        Assert.AreEqual(210.6157m, r14.SuperTrend.Round(4));
+        Assert.AreEqual(null, r14.UpperBand);
+        Assert.AreEqual(r14.SuperTrend, r14.LowerBand);
 
-            // sample values
-            SuperTrendResult r1 = results[12];
-            Assert.AreEqual(null, r1.SuperTrend);
-            Assert.AreEqual(null, r1.UpperBand);
-            Assert.AreEqual(null, r1.LowerBand);
+        SuperTrendResult r151 = results[151];
+        Assert.AreEqual(232.8520m, r151.SuperTrend.Round(4));
+        Assert.AreEqual(null, r151.UpperBand);
+        Assert.AreEqual(r151.SuperTrend, r151.LowerBand);
 
-            SuperTrendResult r2 = results[13];
-            Assert.AreEqual(209.5436m, Math.Round((decimal)r2.SuperTrend, 4));
-            Assert.AreEqual(null, r2.UpperBand);
-            Assert.AreEqual(r2.SuperTrend, r2.LowerBand);
+        SuperTrendResult r152 = results[152];
+        Assert.AreEqual(237.6436m, r152.SuperTrend.Round(4));
+        Assert.AreEqual(r152.SuperTrend, r152.UpperBand);
+        Assert.AreEqual(null, r152.LowerBand);
 
-            SuperTrendResult r3 = results[151];
-            Assert.AreEqual(232.8519m, Math.Round((decimal)r3.SuperTrend, 4));
-            Assert.AreEqual(null, r3.UpperBand);
-            Assert.AreEqual(r3.SuperTrend, r3.LowerBand);
+        SuperTrendResult r249 = results[249];
+        Assert.AreEqual(253.8008m, r249.SuperTrend.Round(4));
+        Assert.AreEqual(null, r249.UpperBand);
+        Assert.AreEqual(r249.SuperTrend, r249.LowerBand);
 
-            SuperTrendResult r4 = results[152];
-            Assert.AreEqual(237.6436m, Math.Round((decimal)r4.SuperTrend, 4));
-            Assert.AreEqual(r4.SuperTrend, r4.UpperBand);
-            Assert.AreEqual(null, r4.LowerBand);
+        SuperTrendResult r501 = results[501];
+        Assert.AreEqual(250.7954m, r501.SuperTrend.Round(4));
+        Assert.AreEqual(r501.SuperTrend, r501.UpperBand);
+        Assert.AreEqual(null, r501.LowerBand);
+    }
 
-            SuperTrendResult r5 = results[249];
-            Assert.AreEqual(253.8008m, Math.Round((decimal)r5.SuperTrend, 4));
-            Assert.AreEqual(null, r5.UpperBand);
-            Assert.AreEqual(r5.SuperTrend, r5.LowerBand);
+    [TestMethod]
+    public void Bitcoin()
+    {
+        IEnumerable<Quote> h = TestData.GetBitcoin();
 
-            SuperTrendResult r6 = results[501];
-            Assert.AreEqual(250.7954m, Math.Round((decimal)r6.SuperTrend, 4));
-            Assert.AreEqual(r6.SuperTrend, r6.UpperBand);
-            Assert.AreEqual(null, r6.LowerBand);
-        }
+        List<SuperTrendResult> results = h
+            .GetSuperTrend(10, 3)
+            .ToList();
 
-        [TestMethod]
-        public void Bitcoin()
-        {
-            IEnumerable<Quote> h = TestData.GetBitcoin();
-            List<SuperTrendResult> results = Indicator.GetSuperTrend(h, 10, 3)
-                .ToList();
-            Assert.AreEqual(1246, results.Count);
+        Assert.AreEqual(1246, results.Count);
 
-            SuperTrendResult r = results[1208];
-            Assert.AreEqual(16242.2704m, Math.Round((decimal)r.LowerBand, 4));
-        }
+        SuperTrendResult r = results[1208];
+        Assert.AreEqual(16242.2704m, r.LowerBand.Round(4));
+    }
 
-        [TestMethod]
-        public void BadData()
-        {
-            IEnumerable<SuperTrendResult> r = Indicator.GetSuperTrend(badQuotes, 7);
-            Assert.AreEqual(502, r.Count());
-        }
+    [TestMethod]
+    public void BadData()
+    {
+        List<SuperTrendResult> r = badQuotes
+            .GetSuperTrend(7)
+            .ToList();
 
-        [TestMethod]
-        public void Removed()
-        {
-            int lookbackPeriods = 14;
-            decimal multiplier = 3;
+        Assert.AreEqual(502, r.Count);
+    }
 
-            List<SuperTrendResult> results =
-                quotes.GetSuperTrend(lookbackPeriods, multiplier)
-                 .RemoveWarmupPeriods()
-                 .ToList();
+    [TestMethod]
+    public void NoQuotes()
+    {
+        List<SuperTrendResult> r0 = noquotes
+            .GetSuperTrend()
+            .ToList();
 
-            // assertions
-            Assert.AreEqual(489, results.Count);
+        Assert.AreEqual(0, r0.Count);
 
-            SuperTrendResult last = results.LastOrDefault();
-            Assert.AreEqual(250.7954m, Math.Round((decimal)last.SuperTrend, 4));
-            Assert.AreEqual(last.SuperTrend, last.UpperBand);
-            Assert.AreEqual(null, last.LowerBand);
-        }
+        List<SuperTrendResult> r1 = onequote
+            .GetSuperTrend()
+            .ToList();
 
-        [TestMethod]
-        public void Exceptions()
-        {
-            // bad lookback period
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
-                Indicator.GetSuperTrend(quotes, 1));
+        Assert.AreEqual(1, r1.Count);
+    }
 
-            // bad multiplier
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
-                Indicator.GetSuperTrend(quotes, 7, 0));
+    [TestMethod]
+    public void Condense()
+    {
+        int lookbackPeriods = 14;
+        double multiplier = 3;
 
-            // insufficient quotes
-            Assert.ThrowsException<BadQuotesException>(() =>
-                Indicator.GetSuperTrend(TestData.GetDefault(129), 30));
-        }
+        List<SuperTrendResult> results = quotes
+            .GetSuperTrend(lookbackPeriods, multiplier)
+            .Condense()
+            .ToList();
+
+        // assertions
+        Assert.AreEqual(488, results.Count);
+
+        SuperTrendResult last = results.LastOrDefault();
+        Assert.AreEqual(250.7954m, last.SuperTrend.Round(4));
+        Assert.AreEqual(last.SuperTrend, last.UpperBand);
+        Assert.AreEqual(null, last.LowerBand);
+    }
+
+    [TestMethod]
+    public void Removed()
+    {
+        int lookbackPeriods = 14;
+        double multiplier = 3;
+
+        List<SuperTrendResult> results = quotes
+            .GetSuperTrend(lookbackPeriods, multiplier)
+            .RemoveWarmupPeriods()
+            .ToList();
+
+        // assertions
+        Assert.AreEqual(488, results.Count);
+
+        SuperTrendResult last = results.LastOrDefault();
+        Assert.AreEqual(250.7954m, last.SuperTrend.Round(4));
+        Assert.AreEqual(last.SuperTrend, last.UpperBand);
+        Assert.AreEqual(null, last.LowerBand);
+    }
+
+    [TestMethod]
+    public void Exceptions()
+    {
+        // bad lookback period
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+            quotes.GetSuperTrend(1));
+
+        // bad multiplier
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+            quotes.GetSuperTrend(7, 0));
     }
 }

@@ -1,12 +1,16 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class PrsResult : ResultBase, IReusableResult
 {
-    [Serializable]
-    public class PrsResult : ResultBase
+    public PrsResult(DateTime date)
     {
-        public decimal? Prs { get; set; }
-        public decimal? PrsSma { get; set; }
-        public decimal? PrsPercent { get; set; }
+        Date = date;
     }
+
+    public double? Prs { get; set; }
+    public double? PrsSma { get; set; }
+    public double? PrsPercent { get; set; }
+
+    double? IReusableResult.Value => Prs;
 }

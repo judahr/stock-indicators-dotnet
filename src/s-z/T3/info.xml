@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<indicator>
+<info>
   <summary>
     Tillson T3 is a smooth moving average that reduces both lag and overshooting.
     <para>
       See
-      <see href="https://daveskender.github.io/Stock.Indicators/indicators/T3/#content">documentation</see>
+      <see href="https://dotnet.StockIndicators.dev/indicators/T3/#content?utm_source=library&amp;utm_medium=inline-help&amp;utm_campaign=embedded">documentation</see>
       for more information.
     </para>
   </summary>
@@ -15,5 +15,4 @@
   <param name="volumeFactor">Size of the Volume Factor.</param>
   <returns>Time series of T3 values.</returns>
   <exception cref="ArgumentOutOfRangeException">Invalid parameter value provided.</exception>
-  <exception cref="BadQuotesException">Insufficient quotes provided.</exception>
-</indicator>
+</info>

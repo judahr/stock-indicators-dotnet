@@ -1,10 +1,14 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class BopResult : ResultBase, IReusableResult
 {
-    [Serializable]
-    public class BopResult : ResultBase
+    public BopResult(DateTime date)
     {
-        public decimal? Bop { get; set; }
+        Date = date;
     }
+
+    public double? Bop { get; set; }
+
+    double? IReusableResult.Value => Bop;
 }

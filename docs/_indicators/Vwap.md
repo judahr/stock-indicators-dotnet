@@ -1,37 +1,38 @@
 ---
 title: Volume Weighted Average Price (VWAP)
+description: The Volume Weighted Average Price is a volume weighted average of price, typically used on intraday data. Trading above or below the VWAP line can assist in finding favorable short-term trading windows.
 permalink: /indicators/Vwap/
-layout: default
+image: /assets/charts/Vwap.png
+type: moving-average
+layout: indicator
 ---
 
 # {{ page.title }}
 
-The [Volume Weighted Average Price](https://en.wikipedia.org/wiki/Volume-weighted_average_price) is a Volume weighted average of Close price, typically used on intraday data.
-[[Discuss] :speech_balloon:]({{site.github.repository_url}}/discussions/310 "Community discussion about this indicator")
+The [Volume Weighted Average Price](https://en.wikipedia.org/wiki/Volume-weighted_average_price) is a Volume weighted average of price, typically used on intraday data.
+[[Discuss] &#128172;]({{site.github.repository_url}}/discussions/310 "Community discussion about this indicator")
 
-![image]({{site.baseurl}}/assets/charts/Vwap.png)
+![chart for {{page.title}}]({{site.baseurl}}{{page.image}})
 
 ```csharp
-// usage
+// C# usage syntax
 IEnumerable<VwapResult> results =
   quotes.GetVwap();
 
 // usage with optional anchored start date
 IEnumerable<VwapResult> results =
-  quotes.GetVwap(startDate);  
+  quotes.GetVwap(startDate);
 ```
 
 ## Parameters
 
-| name | type | notes
-| -- |-- |--
-| `startDate` | DateTime | Optional.  The anchor date used to start the VWAP accumulation.  The earliest date in `quotes` is used when not provided.
+**`startDate`** _`DateTime`_ - Optional.  The anchor date used to start the VWAP accumulation.  The earliest date in `quotes` is used when not provided.
 
 ### Historical quotes requirements
 
 You must have at least one historical quote to calculate; however, more is often needed to be useful.  Historical quotes are typically provided for a single day using minute-based intraday periods.  Since this is an accumulated weighted average price, different start dates will produce different results.  The accumulation starts at the first period in the provided `quotes`, unless it is specified in the optional `startDate` parameter.
 
-`quotes` is an `IEnumerable<TQuote>` collection of historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
+`quotes` is a collection of generic `TQuote` historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
 
 ## Response
 
@@ -47,25 +48,28 @@ IEnumerable<VwapResult>
 
 ### VwapResult
 
-| name | type | notes
-| -- |-- |--
-| `Date` | DateTime | Date
-| `Vwap` | decimal | Volume Weighted Average Price
+**`Date`** _`DateTime`_ - Date from evaluated `TQuote`
+
+**`Vwap`** _`double`_ - Volume Weighted Average Price
 
 ### Utilities
 
+- [.Condense()]({{site.baseurl}}/utilities#condense)
 - [.Find(lookupDate)]({{site.baseurl}}/utilities#find-indicator-result-by-date)
 - [.RemoveWarmupPeriods()]({{site.baseurl}}/utilities#remove-warmup-periods)
 - [.RemoveWarmupPeriods(qty)]({{site.baseurl}}/utilities#remove-warmup-periods)
 
-See [Utilities and Helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
+See [Utilities and helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
 
-## Example
+## Chaining
+
+Results can be further processed on `Vwap` with additional chain-enabled indicators.
 
 ```csharp
-// fetch historical quotes from your feed (your method)
-IEnumerable<Quote> quotes = GetHistoryFromFeed("SPY");
-
-// calculate
-IEnumerable<VwapResult> results = quotes.GetVwap();
+// example
+var results = quotes
+    .GetVwap(..)
+    .GetRsi(..);
 ```
+
+This indicator must be generated from `quotes` and **cannot** be generated from results of another chain-enabled indicator or method.

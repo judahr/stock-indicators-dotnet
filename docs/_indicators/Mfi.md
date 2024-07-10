@@ -1,33 +1,34 @@
 ---
 title: Money Flow Index (MFI)
+description: Created by Quong and Soudack, the Money Flow Index is a price-volume oscillator that shows buying and selling momentum.
 permalink: /indicators/Mfi/
-layout: default
+image: /assets/charts/Mfi.png
+type: volume-based
+layout: indicator
 ---
 
 # {{ page.title }}
 
 Created by Quong and Soudack, the [Money Flow Index](https://en.wikipedia.org/wiki/Money_flow_index) is a price-volume oscillator that shows buying and selling momentum.
-[[Discuss] :speech_balloon:]({{site.github.repository_url}}/discussions/247 "Community discussion about this indicator")
+[[Discuss] &#128172;]({{site.github.repository_url}}/discussions/247 "Community discussion about this indicator")
 
-![image]({{site.baseurl}}/assets/charts/Mfi.png)
+![chart for {{page.title}}]({{site.baseurl}}{{page.image}})
 
 ```csharp
-// usage
+// C# usage syntax
 IEnumerable<MfiResult> results =
   quotes.GetMfi(lookbackPeriods);
 ```
 
 ## Parameters
 
-| name | type | notes
-| -- |-- |--
-| `lookbackPeriods` | int | Number of periods (`N`) in the lookback period.  Must be greater than 1. Default is 14.
+**`lookbackPeriods`** _`int`_ - Number of periods (`N`) in the lookback period.  Must be greater than 1. Default is 14.
 
 ### Historical quotes requirements
 
-You must have at least `N+1` historical quotes.
+You must have at least `N+1` historical quotes to cover the warmup periods.
 
-`quotes` is an `IEnumerable<TQuote>` collection of historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
+`quotes` is a collection of generic `TQuote` historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
 
 ## Response
 
@@ -42,25 +43,28 @@ IEnumerable<MfiResult>
 
 ### MfiResult
 
-| name | type | notes
-| -- |-- |--
-| `Date` | DateTime | Date
-| `Mfi` | decimal | Money Flow Index
+**`Date`** _`DateTime`_ - Date from evaluated `TQuote`
+
+**`Mfi`** _`decimal`_ - Money Flow Index
 
 ### Utilities
 
+- [.Condense()]({{site.baseurl}}/utilities#condense)
 - [.Find(lookupDate)]({{site.baseurl}}/utilities#find-indicator-result-by-date)
 - [.RemoveWarmupPeriods()]({{site.baseurl}}/utilities#remove-warmup-periods)
 - [.RemoveWarmupPeriods(qty)]({{site.baseurl}}/utilities#remove-warmup-periods)
 
-See [Utilities and Helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
+See [Utilities and helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
 
-## Example
+## Chaining
+
+Results can be further processed on `Mfi` with additional chain-enabled indicators.
 
 ```csharp
-// fetch historical quotes from your feed (your method)
-IEnumerable<Quote> quotes = GetHistoryFromFeed("SPY");
-
-// calculate
-IEnumerable<MfiResult> results = quotes.GetMfi(14);
+// example
+var results = quotes
+    .GetMfi(..)
+    .GetRsi(..);
 ```
+
+This indicator must be generated from `quotes` and **cannot** be generated from results of another chain-enabled indicator or method.

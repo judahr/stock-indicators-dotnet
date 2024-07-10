@@ -1,64 +1,81 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Skender.Stock.Indicators;
+namespace Tests.Indicators;
 
-namespace Internal.Tests
+[TestClass]
+public class CciTests : TestBase
 {
-    [TestClass]
-    public class Cci : TestBase
+    [TestMethod]
+    public void Standard()
     {
+        List<CciResult> results = quotes
+            .GetCci(20)
+            .ToList();
 
-        [TestMethod]
-        public void Standard()
-        {
+        // proper quantities
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(483, results.Count(x => x.Cci != null));
 
-            List<CciResult> results = quotes.GetCci(20).ToList();
-
-            // assertions
-
-            // proper quantities
-            // should always be the same number of results as there is quotes
-            Assert.AreEqual(502, results.Count);
-            Assert.AreEqual(483, results.Where(x => x.Cci != null).Count());
-
-            // sample value
-            CciResult r = results[501];
-            Assert.AreEqual(-52.9946m, Math.Round((decimal)r.Cci, 4));
-        }
-
-        [TestMethod]
-        public void BadData()
-        {
-            IEnumerable<CciResult> r = Indicator.GetCci(badQuotes, 15);
-            Assert.AreEqual(502, r.Count());
-        }
-
-        [TestMethod]
-        public void Removed()
-        {
-            List<CciResult> results = quotes.GetCci(20)
-                .RemoveWarmupPeriods()
-                .ToList();
-
-            // assertions
-            Assert.AreEqual(502 - 19, results.Count);
-
-            CciResult last = results.LastOrDefault();
-            Assert.AreEqual(-52.9946m, Math.Round((decimal)last.Cci, 4));
-        }
-
-        [TestMethod]
-        public void Exceptions()
-        {
-            // bad lookback period
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
-                Indicator.GetCci(quotes, 0));
-
-            // insufficient quotes
-            Assert.ThrowsException<BadQuotesException>(() =>
-                Indicator.GetCci(TestData.GetDefault(30), 30));
-        }
+        // sample value
+        CciResult r = results[501];
+        Assert.AreEqual(-52.9946, r.Cci.Round(4));
     }
+
+    [TestMethod]
+    public void Chainor()
+    {
+        List<SmaResult> results = quotes
+            .GetCci(20)
+            .GetSma(10)
+            .ToList();
+
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(474, results.Count(x => x.Sma != null));
+    }
+
+    [TestMethod]
+    public void BadData()
+    {
+        List<CciResult> r = badQuotes
+            .GetCci(15)
+            .ToList();
+
+        Assert.AreEqual(502, r.Count);
+        Assert.AreEqual(0, r.Count(x => x.Cci is double and double.NaN));
+    }
+
+    [TestMethod]
+    public void NoQuotes()
+    {
+        List<CciResult> r0 = noquotes
+            .GetCci()
+            .ToList();
+
+        Assert.AreEqual(0, r0.Count);
+
+        List<CciResult> r1 = onequote
+            .GetCci()
+            .ToList();
+
+        Assert.AreEqual(1, r1.Count);
+    }
+
+    [TestMethod]
+    public void Removed()
+    {
+        List<CciResult> results = quotes
+            .GetCci(20)
+            .RemoveWarmupPeriods()
+            .ToList();
+
+        // assertions
+        Assert.AreEqual(502 - 19, results.Count);
+
+        CciResult last = results.LastOrDefault();
+        Assert.AreEqual(-52.9946, last.Cci.Round(4));
+    }
+
+    // bad lookback period
+    [TestMethod]
+    public void Exceptions()
+        => Assert.ThrowsException<ArgumentOutOfRangeException>(()
+            => quotes.GetCci(0));
 }

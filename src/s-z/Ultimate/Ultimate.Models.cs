@@ -1,10 +1,14 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class UltimateResult : ResultBase, IReusableResult
 {
-    [Serializable]
-    public class UltimateResult : ResultBase
+    public UltimateResult(DateTime date)
     {
-        public decimal? Ultimate { get; set; }
+        Date = date;
     }
+
+    public double? Ultimate { get; set; }
+
+    double? IReusableResult.Value => Ultimate;
 }

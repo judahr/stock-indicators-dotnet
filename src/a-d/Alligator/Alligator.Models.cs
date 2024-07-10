@@ -1,12 +1,14 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class AlligatorResult : ResultBase
 {
-    [Serializable]
-    public class AlligatorResult : ResultBase
+    public AlligatorResult(DateTime date)
     {
-        public decimal? Jaw { get; set; }
-        public decimal? Teeth { get; set; }
-        public decimal? Lips { get; set; }
+        Date = date;
     }
+
+    public double? Jaw { get; set; }
+    public double? Teeth { get; set; }
+    public double? Lips { get; set; }
 }

@@ -1,11 +1,13 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class VortexResult : ResultBase
 {
-    [Serializable]
-    public class VortexResult : ResultBase
+    public VortexResult(DateTime date)
     {
-        public decimal? Pvi { get; set; }
-        public decimal? Nvi { get; set; }
+        Date = date;
     }
+
+    public double? Pvi { get; set; }
+    public double? Nvi { get; set; }
 }

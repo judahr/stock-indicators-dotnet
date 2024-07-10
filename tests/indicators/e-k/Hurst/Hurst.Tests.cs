@@ -1,81 +1,117 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Skender.Stock.Indicators;
+namespace Tests.Indicators;
 
-namespace Internal.Tests
+[TestClass]
+public class HurstTests : TestBase
 {
-    [TestClass]
-    public class Hurst : TestBase
+    [TestMethod]
+    public void StandardLong()
     {
+        List<HurstResult> results = longestQuotes
+            .GetHurst(longestQuotes.Count() - 1)
+            .ToList();
 
-        [TestMethod]
-        public void StandardLong()
-        {
-            List<HurstResult> results = longestQuotes
-                .GetHurst(longestQuotes.Count() - 1)
-                .ToList();
+        // assertions
 
-            // assertions
+        // proper quantities
+        Assert.AreEqual(15821, results.Count);
+        Assert.AreEqual(1, results.Count(x => x.HurstExponent != null));
 
-            // proper quantities
-            Assert.AreEqual(15821, results.Count);
-            Assert.AreEqual(1, results.Count(x => x.HurstExponent != null));
-
-            // sample value
-            HurstResult r15820 = results[15820];
-            Assert.AreEqual(0.483563m, Math.Round((decimal)r15820.HurstExponent, 6));
-        }
-
-        [TestMethod]
-        public void ConvertToQuotes()
-        {
-            List<Quote> newQuotes = longestQuotes
-                .GetHurst(longestQuotes.Count() - 1)
-                .ConvertToQuotes()
-                .ToList();
-
-            Assert.AreEqual(1, newQuotes.Count);
-
-            Quote q = newQuotes.LastOrDefault();
-            Assert.AreEqual(0.483563m, Math.Round(q.Open, 6));
-            Assert.AreEqual(0.483563m, Math.Round(q.High, 6));
-            Assert.AreEqual(0.483563m, Math.Round(q.Low, 6));
-            Assert.AreEqual(0.483563m, Math.Round(q.Close, 6));
-        }
-
-        [TestMethod]
-        public void BadData()
-        {
-            IEnumerable<HurstResult> r = Indicator.GetHurst(badQuotes, 150);
-            Assert.AreEqual(502, r.Count());
-        }
-
-        [TestMethod]
-        public void Removed()
-        {
-            List<HurstResult> results = longestQuotes.GetHurst(longestQuotes.Count() - 1)
-                .RemoveWarmupPeriods()
-                .ToList();
-
-            // assertions
-            Assert.AreEqual(1, results.Count);
-
-            HurstResult last = results.LastOrDefault();
-            Assert.AreEqual(0.483563m, Math.Round((decimal)last.HurstExponent, 6));
-        }
-
-        [TestMethod]
-        public void Exceptions()
-        {
-            // bad lookback period
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
-                Indicator.GetHurst(quotes, 99));
-
-            // insufficient quotes
-            Assert.ThrowsException<BadQuotesException>(() =>
-                Indicator.GetHurst(TestData.GetDefault(499), 500));
-        }
+        // sample value
+        HurstResult r15820 = results[15820];
+        Assert.AreEqual(0.483563, r15820.HurstExponent.Round(6));
     }
+
+    [TestMethod]
+    public void UseTuple()
+    {
+        List<HurstResult> results = quotes
+            .Use(CandlePart.Close)
+            .GetHurst(100)
+            .ToList();
+
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(402, results.Count(x => x.HurstExponent != null));
+    }
+
+    [TestMethod]
+    public void TupleNaN()
+    {
+        List<HurstResult> r = tupleNanny
+            .GetHurst(100)
+            .ToList();
+
+        Assert.AreEqual(200, r.Count);
+        Assert.AreEqual(0, r.Count(x => x.HurstExponent is double and double.NaN));
+    }
+
+    [TestMethod]
+    public void Chainor()
+    {
+        List<SmaResult> results = quotes
+            .GetHurst(100)
+            .GetSma(10)
+            .ToList();
+
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(393, results.Count(x => x.Sma != null));
+    }
+
+    [TestMethod]
+    public void Chainee()
+    {
+        List<HurstResult> results = quotes
+            .GetSma(10)
+            .GetHurst(100)
+            .ToList();
+
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(393, results.Count(x => x.HurstExponent != null));
+    }
+
+    [TestMethod]
+    public void BadData()
+    {
+        List<HurstResult> r = badQuotes
+            .GetHurst(150)
+            .ToList();
+
+        Assert.AreEqual(502, r.Count);
+        Assert.AreEqual(0, r.Count(x => x.HurstExponent is double and double.NaN));
+    }
+
+    [TestMethod]
+    public void NoQuotes()
+    {
+        List<HurstResult> r0 = noquotes
+            .GetHurst()
+            .ToList();
+
+        Assert.AreEqual(0, r0.Count);
+
+        List<HurstResult> r1 = onequote
+            .GetHurst()
+            .ToList();
+
+        Assert.AreEqual(1, r1.Count);
+    }
+
+    [TestMethod]
+    public void Removed()
+    {
+        List<HurstResult> results = longestQuotes.GetHurst(longestQuotes.Count() - 1)
+            .RemoveWarmupPeriods()
+            .ToList();
+
+        // assertions
+        Assert.AreEqual(1, results.Count);
+
+        HurstResult last = results.LastOrDefault();
+        Assert.AreEqual(0.483563, last.HurstExponent.Round(6));
+    }
+
+    // bad lookback period
+    [TestMethod]
+    public void Exceptions()
+        => Assert.ThrowsException<ArgumentOutOfRangeException>(()
+            => quotes.GetHurst(19));
 }

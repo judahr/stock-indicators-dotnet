@@ -1,33 +1,35 @@
 ---
-title: Donchian Channels (Price Channels)
+title: Donchian Channels
+description: Created by Richard Donchian, Donchian Channels, also called Price Channels, are price ranges derived from highest High and lowest Low values.
+
 permalink: /indicators/Donchian/
-layout: default
+image: /assets/charts/Donchian.png
+type: price-channel
+layout: indicator
 ---
 
 # {{ page.title }}
 
-Created by Richard Donchian, [Donchian Channels](https://en.wikipedia.org/wiki/Donchian_channel), also called Price Channels, are derived from highest High and lowest Low values over a lookback window.
-[[Discuss] :speech_balloon:]({{site.github.repository_url}}/discussions/257 "Community discussion about this indicator")
+Created by Richard Donchian, [Donchian Channels](https://en.wikipedia.org/wiki/Donchian_channel), also called Price Channels, are price ranges derived from highest High and lowest Low values.
+[[Discuss] &#128172;]({{site.github.repository_url}}/discussions/257 "Community discussion about this indicator")
 
-![image]({{site.baseurl}}/assets/charts/Donchian.png)
+![chart for {{page.title}}]({{site.baseurl}}{{page.image}})
 
 ```csharp
-// usage
+// C# usage syntax
 IEnumerable<DonchianResult> results =
-  quotes.GetDonchian(lookbackPeriods);  
+  quotes.GetDonchian(lookbackPeriods);
 ```
 
 ## Parameters
 
-| name | type | notes
-| -- |-- |--
-| `lookbackPeriods` | int | Number of periods (`N`) for lookback period.  Must be greater than 0 to calculate; however we suggest a larger value for an appropriate sample size.  Default is 20.
+**`lookbackPeriods`** _`int`_ - Number of periods (`N`) for lookback period.  Must be greater than 0 to calculate; however we suggest a larger value for an appropriate sample size.  Default is 20.
 
 ### Historical quotes requirements
 
-You must have at least `N+1` periods of `quotes`.
+You must have at least `N+1` periods of `quotes` to cover the warmup periods.
 
-`quotes` is an `IEnumerable<TQuote>` collection of historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
+`quotes` is a collection of generic `TQuote` historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
 
 ## Response
 
@@ -42,28 +44,25 @@ IEnumerable<DonchianResult>
 
 ### DonchianResult
 
-| name | type | notes
-| -- |-- |--
-| `Date` | DateTime | Date
-| `UpperBand` | decimal | Upper line is the highest High over `N` periods
-| `Centerline` | decimal | Simple average of Upper and Lower bands
-| `LowerBand` | decimal | Lower line is the lowest Low over `N` periods
-| `Width` | decimal | Width as percent of Centerline price.  `(UpperBand-LowerBand)/Centerline`
+**`Date`** _`DateTime`_ - Date from evaluated `TQuote`
+
+**`UpperBand`** _`decimal`_ - Upper line is the highest High over `N` periods
+
+**`Centerline`** _`decimal`_ - Simple average of Upper and Lower bands
+
+**`LowerBand`** _`decimal`_ - Lower line is the lowest Low over `N` periods
+
+**`Width`** _`decimal`_ - Width as percent of Centerline price.  `(UpperBand-LowerBand)/Centerline`
 
 ### Utilities
 
+- [.Condense()]({{site.baseurl}}/utilities#condense)
 - [.Find(lookupDate)]({{site.baseurl}}/utilities#find-indicator-result-by-date)
 - [.RemoveWarmupPeriods()]({{site.baseurl}}/utilities#remove-warmup-periods)
 - [.RemoveWarmupPeriods(qty)]({{site.baseurl}}/utilities#remove-warmup-periods)
 
-See [Utilities and Helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
+See [Utilities and helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
 
-## Example
+## Chaining
 
-```csharp
-// fetch historical quotes from your feed (your method)
-IEnumerable<Quote> quotes = GetHistoryFromFeed("SPY");
-
-// calculate Donchian(20)
-IEnumerable<DonchianResult> results = quotes.GetDonchian(20);
-```
+This indicator is not chain-enabled and must be generated from `quotes`.  It **cannot** be used for further processing by other chain-enabled indicators.

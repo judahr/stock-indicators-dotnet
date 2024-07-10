@@ -1,31 +1,51 @@
-using System.Collections.Generic;
-using System.Linq;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+public static class Candlesticks
 {
-    public static class Candlesticks
-    {
-        // convert/sort quotes into candles
-        internal static List<Candle> ConvertToCandles<TQuote>(
-            this IEnumerable<TQuote> quotes)
-            where TQuote : IQuote
-        {
-            List<Candle> candlesList = quotes
-                .Select(x => new Candle
-                {
-                    Date = x.Date,
-                    Open = x.Open,
-                    High = x.High,
-                    Low = x.Low,
-                    Close = x.Close
-                })
-                .OrderBy(x => x.Date)
-                .ToList();
+    public static IEnumerable<CandleResult> Condense(
+        this IEnumerable<CandleResult> candleResults) => candleResults
+            .Where(candle => candle.Match != Match.None)
+            .ToList();
 
-            // validate
-            return candlesList == null || candlesList.Count == 0
-                ? throw new BadQuotesException(nameof(quotes), "No historical quotes provided.")
-                : candlesList;
-        }
+    public static CandleProperties ToCandle<TQuote>(
+        this TQuote quote)
+        where TQuote : IQuote => new() {
+            Date = quote.Date,
+            Open = quote.Open,
+            High = quote.High,
+            Low = quote.Low,
+            Close = quote.Close,
+            Volume = quote.Volume
+        };
+
+    // convert/sort quotes into candles list
+    public static IEnumerable<CandleProperties> ToCandles<TQuote>(
+        this IEnumerable<TQuote> quotes)
+        where TQuote : IQuote
+    {
+        List<CandleProperties> candlesList = quotes
+            .Select(x => x.ToCandle())
+            .OrderBy(x => x.Date)
+            .ToList();
+
+        // validate
+        return candlesList;
+    }
+
+    // convert/sort quotes into candle results
+    internal static List<CandleResult> ToCandleResults<TQuote>(
+        this IEnumerable<TQuote> quotes)
+        where TQuote : IQuote
+    {
+        List<CandleResult> candlesList = quotes
+            .Select(x => new CandleResult(x.Date) {
+                Match = Match.None,
+                Candle = x.ToCandle()
+            })
+            .OrderBy(x => x.Date)
+            .ToList();
+
+        // validate
+        return candlesList;
     }
 }

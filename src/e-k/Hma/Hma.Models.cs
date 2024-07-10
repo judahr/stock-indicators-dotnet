@@ -1,10 +1,14 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class HmaResult : ResultBase, IReusableResult
 {
-    [Serializable]
-    public class HmaResult : ResultBase
+    public HmaResult(DateTime date)
     {
-        public decimal? Hma { get; set; }
+        Date = date;
     }
+
+    public double? Hma { get; set; }
+
+    double? IReusableResult.Value => Hma;
 }

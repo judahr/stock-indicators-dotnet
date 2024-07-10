@@ -1,11 +1,15 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class AwesomeResult : ResultBase, IReusableResult
 {
-    [Serializable]
-    public class AwesomeResult : ResultBase
+    public AwesomeResult(DateTime date)
     {
-        public decimal? Oscillator { get; set; }
-        public decimal? Normalized { get; set; }
+        Date = date;
     }
+
+    public double? Oscillator { get; set; }
+    public double? Normalized { get; set; }
+
+    double? IReusableResult.Value => Oscillator;
 }

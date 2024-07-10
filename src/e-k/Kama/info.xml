@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<indicator>
+<info>
   <summary>
-    Kaufman’s Adaptive Moving Average (KAMA) is an volatility adaptive moving average of Close price over configurable lookback periods.
+    Kaufman’s Adaptive Moving Average (KAMA) is an volatility adaptive moving average of price over configurable lookback periods.
     <para>
       See
-      <see href="https://daveskender.github.io/Stock.Indicators/indicators/Kama/#content">documentation</see>
+      <see href="https://dotnet.StockIndicators.dev/indicators/Kama/#content?utm_source=library&amp;utm_medium=inline-help&amp;utm_campaign=embedded">documentation</see>
       for more information.
     </para>
   </summary>
@@ -16,5 +16,4 @@
   <param name="slowPeriods">Number of periods in the Slow EMA.</param>
   <returns>Time series of KAMA values.</returns>
   <exception cref="ArgumentOutOfRangeException">Invalid parameter value provided.</exception>
-  <exception cref="BadQuotesException">Insufficient quotes provided.</exception>
-</indicator>
+</info>

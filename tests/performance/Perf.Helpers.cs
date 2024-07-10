@@ -1,74 +1,36 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using BenchmarkDotNet.Attributes;
-using Internal.Tests;
-using Skender.Stock.Indicators;
+namespace Tests.Performance;
 
-namespace Tests.Performance
+// HELPERS, both public and private
+
+public class HelperPerformance
 {
-    // HELPERS, both public and private
+    private static IEnumerable<Quote> h;
+    private static IEnumerable<Quote> i;
 
-    [MarkdownExporterAttribute.GitHub]
-    public class HelperPerformance
-    {
-        private static IEnumerable<Quote> h;
-        private static IEnumerable<Quote> i;
-        private static IEnumerable<ObvResult> obv;
+    [GlobalSetup]
+    public static void Setup() => h = TestData.GetDefault();
 
-        [GlobalSetup]
-        public void Setup()
-        {
-            h = TestData.GetDefault();
-        }
+    [GlobalSetup(Targets = [nameof(Aggregate)])]
+    public static void SetupIntraday() => i = TestData.GetIntraday();
 
-        [Benchmark]
-        public object Sort()
-        {
-            return h.Sort();
-        }
+    [Benchmark]
+    public object ToSortedList() => h.ToSortedList();
 
-        [Benchmark]
-        public object Validate()
-        {
-            return h.Validate();
-        }
+    [Benchmark]
+    public object ToSortedCollection() => h.ToSortedCollection();
 
-        [GlobalSetup(Targets = new[] { nameof(Aggregate) })]
-        public void SetupIntraday()
-        {
-            i = TestData.GetIntraday();
-        }
+    [Benchmark]
+    public object ToListQuoteD() => h.ToQuoteD();
 
-        [Benchmark]
-        public object Aggregate()
-        {
-            return i.Aggregate(PeriodSize.FifteenMinutes);
-        }
+    [Benchmark]
+    public object Validate() => h.Validate();
 
-        [Benchmark]
-        public object ConvertToBasic()
-        {
-            return h.ConvertToBasic();
-        }
+    [Benchmark]
+    public object Aggregate() => i.Aggregate(PeriodSize.FifteenMinutes);
 
-        [Benchmark]
-        public object ConvertToCandles()
-        {
-            return h.ConvertToCandles();
-        }
+    [Benchmark]
+    public object ToTuple() => h.ToTuple(CandlePart.Close);
 
-        [GlobalSetup(Targets = new[] { nameof(ConvertToQuotes) })]
-        public void SetupQuotes()
-        {
-            h = TestData.GetDefault();
-            obv = h.GetObv();
-        }
-
-        [Benchmark]
-        public object ConvertToQuotes()
-        {
-            return obv.ConvertToQuotes();
-        }
-
-    }
+    [Benchmark]
+    public object ToCandleResults() => h.ToCandleResults();
 }

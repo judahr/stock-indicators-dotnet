@@ -1,33 +1,34 @@
 ---
 title: Ehlers Fisher Transform
+description: Created by John Ehlers, the Fisher Transform converts financial market prices into a Gaussian normal distribution.
 permalink: /indicators/FisherTransform/
-layout: default
+image: /assets/charts/FisherTransform.png
+type: price-transform
+layout: indicator
 ---
 
 # {{ page.title }}
 
 Created by John Ehlers, the [Fisher Transform](https://www.investopedia.com/terms/f/fisher-transform.asp) converts prices into a Gaussian normal distribution.
-[[Discuss] :speech_balloon:]({{site.github.repository_url}}/discussions/409 "Community discussion about this indicator")
+[[Discuss] &#128172;]({{site.github.repository_url}}/discussions/409 "Community discussion about this indicator")
 
-![image]({{site.baseurl}}/assets/charts/FisherTransform.png)
+![chart for {{page.title}}]({{site.baseurl}}{{page.image}})
 
 ```csharp
-// usage
+// C# usage syntax
 IEnumerable<FisherTransformResult> results =
-  quotes.GetFisherTransform(lookbackPeriods);  
+  quotes.GetFisherTransform(lookbackPeriods);
 ```
 
 ## Parameters
 
-| name | type | notes
-| -- |-- |--
-| `lookbackPeriods` | int | Number of periods (`N`) in the lookback window.  Must be greater than 0.  Default is 10.
+**`lookbackPeriods`** _`int`_ - Number of periods (`N`) in the lookback window.  Must be greater than 0.  Default is 10.
 
 ### Historical quotes requirements
 
-You must have at least `N` periods of `quotes`.
+You must have at least `N` periods of `quotes` to cover the warmup periods.
 
-`quotes` is an `IEnumerable<TQuote>` collection of historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
+`quotes` is a collection of generic `TQuote` historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
 
 ## Response
 
@@ -39,18 +40,19 @@ IEnumerable<FisherTransformResult>
 - It always returns the same number of elements as there are in the historical quotes.
 - It does not return a single incremental indicator value.
 
-:hourglass: **Convergence Warning**: The first `N+15` warmup periods will have unusable decreasing magnitude, convergence-related precision errors that can be as high as ~25% deviation in earlier indicator values.
+>&#9886; **Convergence warning**: The first `N+15` warmup periods will have unusable decreasing magnitude, convergence-related precision errors that can be as high as ~25% deviation in earlier indicator values.
 
 ### FisherTransformResult
 
-| name | type | notes
-| -- |-- |--
-| `Date` | DateTime | Date
-| `Fisher` | decimal | Fisher Transform
-| `Trigger` | decimal | FT offset by one period
+**`Date`** _`DateTime`_ - Date from evaluated `TQuote`
+
+**`Fisher`** _`double`_ - Fisher Transform
+
+**`Trigger`** _`double`_ - FT offset by one period
 
 ### Utilities
 
+- [.Condense()]({{site.baseurl}}/utilities#condense)
 - [.Find(lookupDate)]({{site.baseurl}}/utilities#find-indicator-result-by-date)
 - [.RemoveWarmupPeriods(qty)]({{site.baseurl}}/utilities#remove-warmup-periods)
 
@@ -61,15 +63,24 @@ quotes.GetFisherTransform(lookbackPeriods)
   .RemoveWarmupPeriods(lookbackPeriods+15);
 ```
 
-See [Utilities and Helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
+See [Utilities and helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
 
-## Example
+## Chaining
+
+This indicator may be generated from any chain-enabled indicator or method.
 
 ```csharp
-// fetch historical quotes from your feed (your method)
-IEnumerable<Quote> quotes = GetHistoryFromFeed("MSFT");
+// example
+var results = quotes
+    .Use(CandlePart.HL2)
+    .GetFisherTransform(..);
+```
 
-// calculate 10-period FisherTransform
-IEnumerable<FisherTransformResult> results
-  = quotes.GetFisherTransform(10);
+Results can be further processed on `Alma` with additional chain-enabled indicators.
+
+```csharp
+// example
+var results = quotes
+    .GetFisherTransform(..)
+    .GetRsi(..);
 ```

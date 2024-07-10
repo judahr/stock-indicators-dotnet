@@ -1,11 +1,15 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class ParabolicSarResult : ResultBase, IReusableResult
 {
-    [Serializable]
-    public class ParabolicSarResult : ResultBase
+    public ParabolicSarResult(DateTime date)
     {
-        public decimal? Sar { get; set; }
-        public bool? IsReversal { get; set; }
+        Date = date;
     }
+
+    public double? Sar { get; set; }
+    public bool? IsReversal { get; set; }
+
+    double? IReusableResult.Value => Sar;
 }

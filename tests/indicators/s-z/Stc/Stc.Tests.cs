@@ -1,103 +1,165 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Skender.Stock.Indicators;
+namespace Tests.Indicators;
 
-namespace Internal.Tests
+[TestClass]
+public class StcTests : TestBase
 {
-    [TestClass]
-    public class Stc : TestBase
+    [TestMethod]
+    public void Standard()
     {
+        int cyclePeriods = 9;
+        int fastPeriods = 12;
+        int slowPeriods = 26;
 
-        [TestMethod]
-        public void Standard()
+        List<StcResult> results =
+            quotes.GetStc(cyclePeriods, fastPeriods, slowPeriods)
+            .ToList();
+
+        foreach (StcResult r in results)
         {
-            int cyclePeriods = 9;
-            int fastPeriods = 12;
-            int slowPeriods = 26;
-
-            List<StcResult> results =
-                quotes.GetStc(cyclePeriods, fastPeriods, slowPeriods)
-                .ToList();
-
-            foreach (StcResult r in results)
-            {
-                Console.WriteLine($"{r.Date:d},{r.Stc:N4}");
-            }
-
-            // assertions
-
-            // proper quantities
-            // should always be the same number of results as there is quotes
-            Assert.AreEqual(502, results.Count);
-            Assert.AreEqual(467, results.Where(x => x.Stc != null).Count());
-
-            // sample values
-            StcResult r34 = results[34];
-            Assert.IsNull(r34.Stc);
-
-            StcResult r35 = results[35];
-            Assert.AreEqual(100m, r35.Stc);
-
-            StcResult r49 = results[49];
-            Assert.AreEqual(0.8370m, Math.Round((decimal)r49.Stc, 4));
-
-            StcResult r249 = results[249];
-            Assert.AreEqual(27.7340m, Math.Round((decimal)r249.Stc, 4));
-
-            StcResult last = results.LastOrDefault();
-            Assert.AreEqual(19.2544m, Math.Round((decimal)last.Stc, 4));
+            Console.WriteLine($"{r.Date:d},{r.Stc:N4}");
         }
 
-        [TestMethod]
-        public void BadData()
-        {
-            IEnumerable<StcResult> r = badQuotes.GetStc(10, 23, 50);
-            Assert.AreEqual(502, r.Count());
-        }
+        // proper quantities
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(467, results.Count(x => x.Stc != null));
 
-        [TestMethod]
-        public void Removed()
-        {
-            int cyclePeriods = 9;
-            int fastPeriods = 12;
-            int slowPeriods = 26;
+        // sample values
+        StcResult r34 = results[34];
+        Assert.IsNull(r34.Stc);
 
-            List<StcResult> results =
-                quotes.GetStc(cyclePeriods, fastPeriods, slowPeriods)
-                .RemoveWarmupPeriods()
-                .ToList();
+        StcResult r35 = results[35];
+        Assert.AreEqual(100d, r35.Stc);
 
-            // assertions
-            Assert.AreEqual(502 - (slowPeriods + cyclePeriods + 250), results.Count);
+        StcResult r49 = results[49];
+        Assert.AreEqual(0.8370, r49.Stc.Round(4));
 
-            StcResult last = results.LastOrDefault();
-            Assert.AreEqual(19.2544m, Math.Round((decimal)last.Stc, 4));
-        }
+        StcResult r249 = results[249];
+        Assert.AreEqual(27.7340, r249.Stc.Round(4));
 
-        [TestMethod]
-        public void Exceptions()
-        {
-            // bad fast period
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
-                Indicator.GetStc(quotes, 9, 0, 26));
+        StcResult last = results.LastOrDefault();
+        Assert.AreEqual(19.2544, last.Stc.Round(4));
+    }
 
-            // bad slow periods must be larger than faster period
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
-                Indicator.GetStc(quotes, 9, 12, 12));
+    [TestMethod]
+    public void UseTuple()
+    {
+        List<StcResult> results = quotes
+            .Use(CandlePart.Close)
+            .GetStc(9, 12, 26)
+            .ToList();
 
-            // bad signal period
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
-                Indicator.GetStc(quotes, -1, 12, 26));
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(467, results.Count(x => x.Stc != null));
+    }
 
-            // insufficient quotes 2×(S+P)
-            Assert.ThrowsException<BadQuotesException>(() =>
-                Indicator.GetStc(TestData.GetDefault(409), 5, 12, 200));
+    [TestMethod]
+    public void TupleNaN()
+    {
+        List<StcResult> r = tupleNanny
+            .GetStc()
+            .ToList();
 
-            // insufficient quotes S+P+100
-            Assert.ThrowsException<BadQuotesException>(() =>
-                Indicator.GetStc(TestData.GetDefault(134), 9, 12, 26));
-        }
+        Assert.AreEqual(200, r.Count);
+        Assert.AreEqual(0, r.Count(x => x.Stc is double and double.NaN));
+    }
+
+    [TestMethod]
+    public void Chainee()
+    {
+        List<StcResult> results = quotes
+            .GetSma(2)
+            .GetStc(9, 12, 26)
+            .ToList();
+
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(466, results.Count(x => x.Stc != null));
+    }
+
+    [TestMethod]
+    public void Chainor()
+    {
+        List<SmaResult> results = quotes
+            .GetStc(9, 12, 26)
+            .GetSma(10)
+            .ToList();
+
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(458, results.Count(x => x.Sma != null));
+    }
+
+    [TestMethod]
+    public void BadData()
+    {
+        List<StcResult> r = badQuotes
+            .GetStc(10, 23, 50)
+            .ToList();
+
+        Assert.AreEqual(502, r.Count);
+        Assert.AreEqual(0, r.Count(x => x.Stc is double and double.NaN));
+    }
+
+    [TestMethod]
+    public void NoQuotes()
+    {
+        List<StcResult> r0 = noquotes
+            .GetStc()
+            .ToList();
+
+        Assert.AreEqual(0, r0.Count);
+
+        List<StcResult> r1 = onequote
+            .GetStc()
+            .ToList();
+
+        Assert.AreEqual(1, r1.Count);
+    }
+
+    [TestMethod]
+    public void Issue1107()
+    {
+        // stochastic SMMA variant initialization bug
+
+        RandomGbm quotes = new(58);
+
+        List<StcResult> results = quotes
+            .GetStc(10, 23, 50)
+            .ToList();
+
+        Assert.AreEqual(58, results.Count);
+    }
+
+    [TestMethod]
+    public void Removed()
+    {
+        int cyclePeriods = 9;
+        int fastPeriods = 12;
+        int slowPeriods = 26;
+
+        List<StcResult> results = quotes
+            .GetStc(cyclePeriods, fastPeriods, slowPeriods)
+            .RemoveWarmupPeriods()
+            .ToList();
+
+        // assertions
+        Assert.AreEqual(502 - (slowPeriods + cyclePeriods + 250), results.Count);
+
+        StcResult last = results.LastOrDefault();
+        Assert.AreEqual(19.2544, last.Stc.Round(4));
+    }
+
+    [TestMethod]
+    public void Exceptions()
+    {
+        // bad fast period
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+            quotes.GetStc(9, 0, 26));
+
+        // bad slow periods must be larger than faster period
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+            quotes.GetStc(9, 12, 12));
+
+        // bad signal period
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+            quotes.GetStc(-1, 12, 26));
     }
 }

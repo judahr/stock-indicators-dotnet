@@ -1,66 +1,119 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Skender.Stock.Indicators;
+namespace Tests.Indicators;
 
-namespace Internal.Tests
+[TestClass]
+public class HmaTests : TestBase
 {
-    [TestClass]
-    public class Hma : TestBase
+    [TestMethod]
+    public void Standard()
     {
+        List<HmaResult> results = quotes
+            .GetHma(20)
+            .ToList();
 
-        [TestMethod]
-        public void Standard()
-        {
-            List<HmaResult> results = quotes.GetHma(20).ToList();
+        // proper quantities
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(480, results.Count(x => x.Hma != null));
 
-            // assertions
+        // sample values
+        HmaResult r1 = results[149];
+        Assert.AreEqual(236.0835, r1.Hma.Round(4));
 
-            // proper quantities
-            // should always be the same number of results as there is quotes
-            Assert.AreEqual(502, results.Count);
-            Assert.AreEqual(480, results.Where(x => x.Hma != null).Count());
-
-            // sample values
-            HmaResult r1 = results[149];
-            Assert.AreEqual(236.0835m, Math.Round((decimal)r1.Hma, 4));
-
-            HmaResult r2 = results[501];
-            Assert.AreEqual(235.6972m, Math.Round((decimal)r2.Hma, 4));
-        }
-
-        [TestMethod]
-        public void BadData()
-        {
-            IEnumerable<HmaResult> r = Indicator.GetHma(badQuotes, 15);
-            Assert.AreEqual(502, r.Count());
-        }
-
-        [TestMethod]
-        public void Removed()
-        {
-            List<HmaResult> results = quotes.GetHma(20)
-                .RemoveWarmupPeriods()
-                .ToList();
-
-            // assertions
-            Assert.AreEqual(480, results.Count);
-
-            HmaResult last = results.LastOrDefault();
-            Assert.AreEqual(235.6972m, Math.Round((decimal)last.Hma, 4));
-        }
-
-        [TestMethod]
-        public void Exceptions()
-        {
-            // bad lookback period
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
-                quotes.GetHma(1));
-
-            // insufficient quotes
-            Assert.ThrowsException<BadQuotesException>(() =>
-                Indicator.GetHma(TestData.GetDefault(10), 9));
-        }
+        HmaResult r2 = results[501];
+        Assert.AreEqual(235.6972, r2.Hma.Round(4));
     }
+
+    [TestMethod]
+    public void UseTuple()
+    {
+        List<HmaResult> results = quotes
+            .Use(CandlePart.Close)
+            .GetHma(20)
+            .ToList();
+
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(480, results.Count(x => x.Hma != null));
+    }
+
+    [TestMethod]
+    public void TupleNaN()
+    {
+        List<HmaResult> r = tupleNanny
+            .GetHma(6)
+            .ToList();
+
+        Assert.AreEqual(200, r.Count);
+        Assert.AreEqual(0, r.Count(x => x.Hma is double and double.NaN));
+    }
+
+    [TestMethod]
+    public void Chainee()
+    {
+        List<HmaResult> results = quotes
+            .GetSma(2)
+            .GetHma(19)
+            .ToList();
+
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(480, results.Count(x => x.Hma != null));
+    }
+
+    [TestMethod]
+    public void Chainor()
+    {
+        List<SmaResult> results = quotes
+            .GetHma(20)
+            .GetSma(10)
+            .ToList();
+
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(471, results.Count(x => x.Sma != null));
+    }
+
+    [TestMethod]
+    public void BadData()
+    {
+        List<HmaResult> r = badQuotes
+            .GetHma(15)
+            .ToList();
+
+        Assert.AreEqual(502, r.Count);
+        Assert.AreEqual(0, r.Count(x => x.Hma is double and double.NaN));
+    }
+
+    [TestMethod]
+    public void NoQuotes()
+    {
+        List<HmaResult> r0 = noquotes
+            .GetHma(5)
+            .ToList();
+
+        Assert.AreEqual(0, r0.Count);
+
+        List<HmaResult> r1 = onequote
+            .GetHma(5)
+            .ToList();
+
+        Assert.AreEqual(1, r1.Count);
+    }
+
+    [TestMethod]
+    public void Removed()
+    {
+        List<HmaResult> results = quotes
+            .GetHma(20)
+            .RemoveWarmupPeriods()
+            .ToList();
+
+        // assertions
+        Assert.AreEqual(480, results.Count);
+
+        HmaResult last = results.LastOrDefault();
+        Assert.AreEqual(235.6972, last.Hma.Round(4));
+    }
+
+    // bad lookback period
+    [TestMethod]
+    public void Exceptions()
+        => Assert.ThrowsException<ArgumentOutOfRangeException>(()
+            => quotes.GetHma(1));
 }

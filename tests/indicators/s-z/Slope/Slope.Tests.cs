@@ -1,87 +1,150 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Skender.Stock.Indicators;
+namespace Tests.Indicators;
 
-namespace Internal.Tests
+[TestClass]
+public class SlopeTests : TestBase
 {
-    [TestClass]
-    public class Slope : TestBase
+    [TestMethod]
+    public void Standard()
     {
+        List<SlopeResult> results = quotes
+            .GetSlope(20)
+            .ToList();
 
-        [TestMethod]
-        public void Standard()
-        {
-            List<SlopeResult> results = quotes.GetSlope(20).ToList();
+        // proper quantities
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(483, results.Count(x => x.Slope != null));
+        Assert.AreEqual(483, results.Count(x => x.StdDev != null));
+        Assert.AreEqual(20, results.Count(x => x.Line != null));
 
-            // assertions
+        // sample values
+        SlopeResult r1 = results[249];
+        Assert.AreEqual(0.312406, r1.Slope.Round(6));
+        Assert.AreEqual(180.4164, r1.Intercept.Round(4));
+        Assert.AreEqual(0.8056, r1.RSquared.Round(4));
+        Assert.AreEqual(2.0071, r1.StdDev.Round(4));
+        Assert.AreEqual(null, r1.Line);
 
-            // proper quantities
-            // should always be the same number of results as there is quotes
-            Assert.AreEqual(502, results.Count);
-            Assert.AreEqual(483, results.Where(x => x.Slope != null).Count());
-            Assert.AreEqual(483, results.Where(x => x.StdDev != null).Count());
-            Assert.AreEqual(20, results.Where(x => x.Line != null).Count());
+        SlopeResult r2 = results[482];
+        Assert.AreEqual(-0.337015, r2.Slope.Round(6));
+        Assert.AreEqual(425.1111, r2.Intercept.Round(4));
+        Assert.AreEqual(0.1730, r2.RSquared.Round(4));
+        Assert.AreEqual(4.6719, r2.StdDev.Round(4));
+        Assert.AreEqual(267.9069m, r2.Line.Round(4));
 
-            // sample values
-            SlopeResult r1 = results[249];
-            Assert.AreEqual(0.312406m, Math.Round((decimal)r1.Slope, 6));
-            Assert.AreEqual(180.4164m, Math.Round((decimal)r1.Intercept, 4));
-            Assert.AreEqual(0.8056m, Math.Round((decimal)r1.RSquared, 4));
-            Assert.AreEqual(2.0071m, Math.Round((decimal)r1.StdDev, 4));
-            Assert.AreEqual(null, r1.Line);
-
-            SlopeResult r2 = results[482];
-            Assert.AreEqual(-0.337015m, Math.Round((decimal)r2.Slope, 6));
-            Assert.AreEqual(425.1111m, Math.Round((decimal)r2.Intercept, 4));
-            Assert.AreEqual(0.1730m, Math.Round((decimal)r2.RSquared, 4));
-            Assert.AreEqual(4.6719m, Math.Round((decimal)r2.StdDev, 4));
-            Assert.AreEqual(267.9069m, Math.Round((decimal)r2.Line, 4));
-
-            SlopeResult r3 = results[501];
-            Assert.AreEqual(-1.689143m, Math.Round((decimal)r3.Slope, 6));
-            Assert.AreEqual(1083.7629m, Math.Round((decimal)r3.Intercept, 4));
-            Assert.AreEqual(0.7955m, Math.Round((decimal)r3.RSquared, 4));
-            Assert.AreEqual(10.9202m, Math.Round((decimal)r3.StdDev, 4));
-            Assert.AreEqual(235.8131m, Math.Round((decimal)r3.Line, 4));
-        }
-
-        [TestMethod]
-        public void BadData()
-        {
-            IEnumerable<SlopeResult> r = Indicator.GetSlope(badQuotes, 15);
-            Assert.AreEqual(502, r.Count());
-        }
-
-        [TestMethod]
-        public void Removed()
-        {
-            List<SlopeResult> results = quotes.GetSlope(20)
-                .RemoveWarmupPeriods()
-                .ToList();
-
-            // assertions
-            Assert.AreEqual(502 - 19, results.Count);
-
-            SlopeResult last = results.LastOrDefault();
-            Assert.AreEqual(-1.689143m, Math.Round((decimal)last.Slope, 6));
-            Assert.AreEqual(1083.7629m, Math.Round((decimal)last.Intercept, 4));
-            Assert.AreEqual(0.7955m, Math.Round((decimal)last.RSquared, 4));
-            Assert.AreEqual(10.9202m, Math.Round((decimal)last.StdDev, 4));
-            Assert.AreEqual(235.8131m, Math.Round((decimal)last.Line, 4));
-        }
-
-        [TestMethod]
-        public void Exceptions()
-        {
-            // bad lookback period
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
-                Indicator.GetSlope(quotes, 0));
-
-            // insufficient quotes
-            Assert.ThrowsException<BadQuotesException>(() =>
-                Indicator.GetSlope(TestData.GetDefault(29), 30));
-        }
+        SlopeResult r3 = results[501];
+        Assert.AreEqual(-1.689143, r3.Slope.Round(6));
+        Assert.AreEqual(1083.7629, r3.Intercept.Round(4));
+        Assert.AreEqual(0.7955, r3.RSquared.Round(4));
+        Assert.AreEqual(10.9202, r3.StdDev.Round(4));
+        Assert.AreEqual(235.8131m, r3.Line.Round(4));
     }
+
+    [TestMethod]
+    public void UseTuple()
+    {
+        List<SlopeResult> results = quotes
+            .Use(CandlePart.Close)
+            .GetSlope(20)
+            .ToList();
+
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(483, results.Count(x => x.Slope != null));
+    }
+
+    [TestMethod]
+    public void TupleNaN()
+    {
+        List<SlopeResult> r = tupleNanny
+            .GetSlope(6)
+            .ToList();
+
+        Assert.AreEqual(200, r.Count);
+        Assert.AreEqual(0, r.Count(x => x.Slope is double and double.NaN));
+    }
+
+    [TestMethod]
+    public void Chainee()
+    {
+        List<SlopeResult> results = quotes
+            .GetSma(2)
+            .GetSlope(20)
+            .ToList();
+
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(482, results.Count(x => x.Slope != null));
+    }
+
+    [TestMethod]
+    public void Chainor()
+    {
+        List<SmaResult> results = quotes
+            .GetSlope(20)
+            .GetSma(10)
+            .ToList();
+
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(474, results.Count(x => x.Sma != null));
+    }
+
+    [TestMethod]
+    public void BadData()
+    {
+        List<SlopeResult> r = badQuotes
+            .GetSlope(15)
+            .ToList();
+
+        Assert.AreEqual(502, r.Count);
+        Assert.AreEqual(0, r.Count(x => x.Slope is double and double.NaN));
+    }
+
+    [TestMethod]
+    public void BigData()
+    {
+        List<SlopeResult> r = bigQuotes
+            .GetSlope(250)
+            .ToList();
+
+        Assert.AreEqual(1246, r.Count);
+    }
+
+    [TestMethod]
+    public void NoQuotes()
+    {
+        List<SlopeResult> r0 = noquotes
+            .GetSlope(5)
+            .ToList();
+
+        Assert.AreEqual(0, r0.Count);
+
+        List<SlopeResult> r1 = onequote
+            .GetSlope(5)
+            .ToList();
+
+        Assert.AreEqual(1, r1.Count);
+    }
+
+    [TestMethod]
+    public void Removed()
+    {
+        List<SlopeResult> results = quotes
+            .GetSlope(20)
+            .RemoveWarmupPeriods()
+            .ToList();
+
+        // assertions
+        Assert.AreEqual(502 - 19, results.Count);
+
+        SlopeResult last = results.LastOrDefault();
+        Assert.AreEqual(-1.689143, last.Slope.Round(6));
+        Assert.AreEqual(1083.7629, last.Intercept.Round(4));
+        Assert.AreEqual(0.7955, last.RSquared.Round(4));
+        Assert.AreEqual(10.9202, last.StdDev.Round(4));
+        Assert.AreEqual(235.8131m, last.Line.Round(4));
+    }
+
+    // bad lookback period
+    [TestMethod]
+    public void Exceptions()
+        => Assert.ThrowsException<ArgumentOutOfRangeException>(()
+            => quotes.GetSlope(1));
 }

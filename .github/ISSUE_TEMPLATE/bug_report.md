@@ -1,30 +1,54 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: ''
+title: ""
 labels: bug
-assignees: ''
 ---
 
-## the problem
+### the problem
+<!--
+Write a clear and succinct description
+of the bug and expected behavior.
 
-A clear and concise description of the bug.  If known, explain why you believe the problem is within this library.
+IMPORTANT: Please determine if other charting platforms are
+accurate before comparing to this library.  We're unable to
+debug their problems for you.
 
-Error message(s):
+If you've only compared to TradingView, please review others,
+ and this discussion before submitting a bug:
+https://github.com/DaveSkender/Stock.Indicators/discussions/801
 
-```bash
-# Include any error messages if available.
+If your request is urgent, please review our sponsorship tiers
+here: https://github.com/sponsors/facioquo
+
+If you require contract custom development, please contact
+our parent organization at https://skenderco.com
+-->
+
+<!-- BUG TEMPLATES TO CONSIDER (optional):
+
+### my situation
+
+- library version: [e.g. v2.5.0]
+- indicator and params: [e.g. GetSma(lookbackPeriods: 14)]
+- with these quotes: [attach the historical quotes you used as JSON, CSV, or Excel file]
+
+```csharp
+// add code snippet, as needed
+var results = quotes.GetSma(14);
+[..]
 ```
 
-## to reproduce
+### steps to reproduce
 
-1. What indicator and parameter arguments were used?
-2. Attach the historical quotes you used (as CSV or Excel file)
+When helpful, add steps to reproduce the problem
+and any error messages that can help with troubleshooting.
 
-## expected behavior
+1. I did this first
+2. Then another thing
+3. and I got this error:
 
-A description of what you expected to happen.
+Error message(s) or maleficent outcome:
 
-## screenshots or other reference materials
-
-If applicable, add screenshots or other reference materials to help explain the problem.
+> Include any error messages if available.
+-->

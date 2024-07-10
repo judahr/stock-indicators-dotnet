@@ -1,12 +1,16 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class AtrResult : ResultBase, IReusableResult
 {
-    [Serializable]
-    public class AtrResult : ResultBase
+    public AtrResult(DateTime date)
     {
-        public decimal? Tr { get; set; }
-        public decimal? Atr { get; set; }
-        public decimal? Atrp { get; set; }
+        Date = date;
     }
+
+    public double? Tr { get; set; }
+    public double? Atr { get; set; }
+    public double? Atrp { get; set; }
+
+    double? IReusableResult.Value => Atrp;
 }

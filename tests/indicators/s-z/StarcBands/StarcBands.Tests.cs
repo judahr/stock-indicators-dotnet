@@ -1,114 +1,136 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Skender.Stock.Indicators;
+namespace Tests.Indicators;
 
-namespace Internal.Tests
+[TestClass]
+public class StarcBandsTests : TestBase
 {
-    [TestClass]
-    public class StarcBands : TestBase
+    [TestMethod]
+    public void Standard()
     {
+        int smaPeriods = 20;
+        int multiplier = 2;
+        int atrPeriods = 14;
 
-        [TestMethod]
-        public void Standard()
-        {
-            int smaPeriods = 20;
-            int multiplier = 2;
-            int atrPeriods = 14;
-            int lookbackPeriods = Math.Max(smaPeriods, atrPeriods);
+        List<StarcBandsResult> results = quotes
+            .GetStarcBands(smaPeriods, multiplier, atrPeriods)
+            .ToList();
 
-            List<StarcBandsResult> results =
-                quotes.GetStarcBands(smaPeriods, multiplier, atrPeriods)
-                .ToList();
+        // proper quantities
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(483, results.Count(x => x.Centerline != null));
+        Assert.AreEqual(483, results.Count(x => x.UpperBand != null));
+        Assert.AreEqual(483, results.Count(x => x.LowerBand != null));
 
-            // assertions
+        // sample value
+        StarcBandsResult r1 = results[18];
+        Assert.AreEqual(null, r1.Centerline);
+        Assert.AreEqual(null, r1.UpperBand);
+        Assert.AreEqual(null, r1.LowerBand);
 
-            // proper quantities
-            // should always be the same number of results as there is quotes
-            Assert.AreEqual(502, results.Count);
-            Assert.AreEqual(483, results.Where(x => x.Centerline != null).Count());
-            Assert.AreEqual(483, results.Where(x => x.UpperBand != null).Count());
-            Assert.AreEqual(483, results.Where(x => x.LowerBand != null).Count());
+        StarcBandsResult r19 = results[19];
+        Assert.AreEqual(214.5250, r19.Centerline.Round(4));
+        Assert.AreEqual(217.2345, r19.UpperBand.Round(4));
+        Assert.AreEqual(211.8155, r19.LowerBand.Round(4));
 
-            // sample value
-            StarcBandsResult r1 = results[18];
-            Assert.AreEqual(null, r1.Centerline);
-            Assert.AreEqual(null, r1.UpperBand);
-            Assert.AreEqual(null, r1.LowerBand);
+        StarcBandsResult r249 = results[249];
+        Assert.AreEqual(255.5500, r249.Centerline.Round(4));
+        Assert.AreEqual(258.2261, r249.UpperBand.Round(4));
+        Assert.AreEqual(252.8739, r249.LowerBand.Round(4));
 
-            StarcBandsResult r2 = results[19];
-            Assert.AreEqual(214.5250m, Math.Round((decimal)r2.Centerline, 4));
-            Assert.AreEqual(217.2831m, Math.Round((decimal)r2.UpperBand, 4));
-            Assert.AreEqual(211.7669m, Math.Round((decimal)r2.LowerBand, 4));
+        StarcBandsResult r485 = results[485];
+        Assert.AreEqual(265.4855, r485.Centerline.Round(4));
+        Assert.AreEqual(275.1161, r485.UpperBand.Round(4));
+        Assert.AreEqual(255.8549, r485.LowerBand.Round(4));
 
-            StarcBandsResult r3 = results[249];
-            Assert.AreEqual(255.5500m, Math.Round((decimal)r3.Centerline, 4));
-            Assert.AreEqual(258.2261m, Math.Round((decimal)r3.UpperBand, 4));
-            Assert.AreEqual(252.8739m, Math.Round((decimal)r3.LowerBand, 4));
+        StarcBandsResult r501 = results[501];
+        Assert.AreEqual(251.8600, r501.Centerline.Round(4));
+        Assert.AreEqual(264.1595, r501.UpperBand.Round(4));
+        Assert.AreEqual(239.5605, r501.LowerBand.Round(4));
+    }
 
-            StarcBandsResult r4 = results[485];
-            Assert.AreEqual(265.4855m, Math.Round((decimal)r4.Centerline, 4));
-            Assert.AreEqual(275.1161m, Math.Round((decimal)r4.UpperBand, 4));
-            Assert.AreEqual(255.8549m, Math.Round((decimal)r4.LowerBand, 4));
+    [TestMethod]
+    public void BadData()
+    {
+        List<StarcBandsResult> r = badQuotes
+            .GetStarcBands(10, 3, 15)
+            .ToList();
 
-            StarcBandsResult r5 = results[501];
-            Assert.AreEqual(251.8600m, Math.Round((decimal)r5.Centerline, 4));
-            Assert.AreEqual(264.1595m, Math.Round((decimal)r5.UpperBand, 4));
-            Assert.AreEqual(239.5605m, Math.Round((decimal)r5.LowerBand, 4));
-        }
+        Assert.AreEqual(502, r.Count);
+        Assert.AreEqual(0, r.Count(x => x.UpperBand is double and double.NaN));
+    }
 
-        [TestMethod]
-        public void BadData()
-        {
-            IEnumerable<StarcBandsResult> r = Indicator.GetStarcBands(badQuotes, 10, 3, 15);
-            Assert.AreEqual(502, r.Count());
-        }
+    [TestMethod]
+    public void NoQuotes()
+    {
+        List<StarcBandsResult> r0 = noquotes
+            .GetStarcBands(10)
+            .ToList();
 
-        [TestMethod]
-        public void Removed()
-        {
-            int smaPeriods = 20;
-            int multiplier = 2;
-            int atrPeriods = 14;
-            int lookbackPeriods = Math.Max(smaPeriods, atrPeriods);
+        Assert.AreEqual(0, r0.Count);
 
-            List<StarcBandsResult> results =
-                quotes.GetStarcBands(smaPeriods, multiplier, atrPeriods)
-                    .RemoveWarmupPeriods()
-                    .ToList();
+        List<StarcBandsResult> r1 = onequote
+            .GetStarcBands(10)
+            .ToList();
 
-            // assertions
-            Assert.AreEqual(502 - (lookbackPeriods + 150), results.Count);
+        Assert.AreEqual(1, r1.Count);
+    }
 
-            StarcBandsResult last = results.LastOrDefault();
-            Assert.AreEqual(251.8600m, Math.Round((decimal)last.Centerline, 4));
-            Assert.AreEqual(264.1595m, Math.Round((decimal)last.UpperBand, 4));
-            Assert.AreEqual(239.5605m, Math.Round((decimal)last.LowerBand, 4));
-        }
+    [TestMethod]
+    public void Condense()
+    {
+        int smaPeriods = 20;
+        int multiplier = 2;
+        int atrPeriods = 14;
+        int lookbackPeriods = Math.Max(smaPeriods, atrPeriods);
 
-        [TestMethod]
-        public void Exceptions()
-        {
-            // bad EMA period
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
-                Indicator.GetStarcBands(quotes, 1, 2, 10));
+        List<StarcBandsResult> results = quotes
+            .GetStarcBands(smaPeriods, multiplier, atrPeriods)
+            .Condense()
+            .ToList();
 
-            // bad ATR period
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
-                Indicator.GetStarcBands(quotes, 20, 2, 1));
+        // assertions
+        Assert.AreEqual(502 - lookbackPeriods + 1, results.Count);
 
-            // bad multiplier
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
-                Indicator.GetStarcBands(quotes, 20, 0, 10));
+        StarcBandsResult last = results.LastOrDefault();
+        Assert.AreEqual(251.8600, last.Centerline.Round(4));
+        Assert.AreEqual(264.1595, last.UpperBand.Round(4));
+        Assert.AreEqual(239.5605, last.LowerBand.Round(4));
+    }
 
-            // insufficient quotes 120
-            Assert.ThrowsException<BadQuotesException>(() =>
-                Indicator.GetStarcBands(TestData.GetDefault(119), 120, 2, 10));
+    [TestMethod]
+    public void Removed()
+    {
+        int smaPeriods = 20;
+        int multiplier = 2;
+        int atrPeriods = 14;
+        int lookbackPeriods = Math.Max(smaPeriods, atrPeriods);
 
-            // insufficient quotes 250
-            Assert.ThrowsException<BadQuotesException>(() =>
-                Indicator.GetStarcBands(TestData.GetDefault(249), 20, 2, 150));
-        }
+        List<StarcBandsResult> results = quotes
+            .GetStarcBands(smaPeriods, multiplier, atrPeriods)
+            .RemoveWarmupPeriods()
+            .ToList();
+
+        // assertions
+        Assert.AreEqual(502 - (lookbackPeriods + 150), results.Count);
+
+        StarcBandsResult last = results.LastOrDefault();
+        Assert.AreEqual(251.8600, last.Centerline.Round(4));
+        Assert.AreEqual(264.1595, last.UpperBand.Round(4));
+        Assert.AreEqual(239.5605, last.LowerBand.Round(4));
+    }
+
+    [TestMethod]
+    public void Exceptions()
+    {
+        // bad EMA period
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+            quotes.GetStarcBands(1, 2, 10));
+
+        // bad ATR period
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+            quotes.GetStarcBands(20, 2, 1));
+
+        // bad multiplier
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+            quotes.GetStarcBands(20, 0, 10));
     }
 }

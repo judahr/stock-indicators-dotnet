@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<indicator>
+<info>
   <summary>
-    Average Directional Movement Index (ADX) is a measure of price directional movement.
+    Directional Movement Index (DMI) and Average Directional Movement Index (ADX) is a measure of price directional movement.
     It includes upward and downward indicators, and is often used to measure strength of trend.
     <para>
       See
-      <see href="https://daveskender.github.io/Stock.Indicators/indicators/Adx/#content">documentation</see>
+      <see href="https://dotnet.StockIndicators.dev/indicators/Adx/#content?utm_source=library&amp;utm_medium=inline-help&amp;utm_campaign=embedded">documentation</see>
       for more information.
     </para>
   </summary>
@@ -15,5 +15,4 @@
   <param name="lookbackPeriods">Number of periods in the lookback window.</param>
   <returns>Time series of ADX and Plus/Minus Directional values.</returns>
   <exception cref="ArgumentOutOfRangeException">Invalid parameter value provided.</exception>
-  <exception cref="BadQuotesException">Insufficient quotes provided.</exception>
-</indicator>
+</info>

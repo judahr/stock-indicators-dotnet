@@ -1,33 +1,34 @@
 ---
 title: Aroon
+description: Created by Tushar Chande, Aroon is a oscillator view of how long ago the new high or low price occurred.
 permalink: /indicators/Aroon/
-layout: default
+image: /assets/charts/Aroon.png
+type: price-trend
+layout: indicator
 ---
 
 # {{ page.title }}
 
-Created by Tushar Chande, [Aroon](https://school.stockcharts.com/doku.php?id=technical_indicators:aroon) is a oscillator view of how long ago the new high or low price occured over a lookback window.
-[[Discuss] :speech_balloon:]({{site.github.repository_url}}/discussions/266 "Community discussion about this indicator")
+Created by Tushar Chande, [Aroon](https://school.stockcharts.com/doku.php?id=technical_indicators:aroon) is a oscillator view of how long ago the new high or low price occurred.
+[[Discuss] &#128172;]({{site.github.repository_url}}/discussions/266 "Community discussion about this indicator")
 
-![image]({{site.baseurl}}/assets/charts/Aroon.png)
+![chart for {{page.title}}]({{site.baseurl}}{{page.image}})
 
 ```csharp
-// usage
+// C# usage syntax
 IEnumerable<AroonResult> results =
   quotes.GetAroon(lookbackPeriods);
 ```
 
 ## Parameters
 
-| name | type | notes
-| -- |-- |--
-| `lookbackPeriods` | int | Number of periods (`N`) for the lookback evaluation.  Must be greater than 0.  Default is 25.
+**`lookbackPeriods`** _`int`_ - Number of periods (`N`) for the lookback evaluation.  Must be greater than 0.  Default is 25.
 
 ### Historical quotes requirements
 
-You must have at least `N` periods of `quotes`.
+You must have at least `N` periods of `quotes` to cover the warmup periods.
 
-`quotes` is an `IEnumerable<TQuote>` collection of historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
+`quotes` is a collection of generic `TQuote` historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
 
 ## Response
 
@@ -42,27 +43,32 @@ IEnumerable<AroonResult>
 
 ### AroonResult
 
-| name | type | notes
-| -- |-- |--
-| `Date` | DateTime | Date
-| `AroonUp` | decimal | Based on last High price
-| `AroonDown` | decimal | Based on last Low price
-| `Oscillator` | decimal | AroonUp - AroonDown
+**`Date`** _`DateTime`_ - Date from evaluated `TQuote`
+
+**`AroonUp`** _`double`_ - Based on last High price
+
+**`AroonDown`** _`double`_ - Based on last Low price
+
+**`Oscillator`** _`double`_ - AroonUp - AroonDown
 
 ### Utilities
 
+- [.Condense()]({{site.baseurl}}/utilities#condense)
 - [.Find(lookupDate)]({{site.baseurl}}/utilities#find-indicator-result-by-date)
 - [.RemoveWarmupPeriods()]({{site.baseurl}}/utilities#remove-warmup-periods)
 - [.RemoveWarmupPeriods(qty)]({{site.baseurl}}/utilities#remove-warmup-periods)
 
-See [Utilities and Helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
+See [Utilities and helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
 
-## Example
+## Chaining
+
+Results can be further processed on `Oscillator` with additional chain-enabled indicators.
 
 ```csharp
-// fetch historical quotes from your feed (your method)
-IEnumerable<Quote> quotes = GetHistoryFromFeed("SPY");
-
-// calculate Aroon(25)
-IEnumerable<AroonResult> results = quotes.GetAroon(25);
+// example
+var results = quotes
+    .GetAroon(..)
+    .GetSlope(..);
 ```
+
+This indicator must be generated from `quotes` and **cannot** be generated from results of another chain-enabled indicator or method.

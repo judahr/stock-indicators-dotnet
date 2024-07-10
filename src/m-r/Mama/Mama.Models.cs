@@ -1,11 +1,15 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class MamaResult : ResultBase, IReusableResult
 {
-    [Serializable]
-    public class MamaResult : ResultBase
+    public MamaResult(DateTime date)
     {
-        public decimal? Mama { get; set; }
-        public decimal? Fama { get; set; }
+        Date = date;
     }
+
+    public double? Mama { get; set; }
+    public double? Fama { get; set; }
+
+    double? IReusableResult.Value => Mama;
 }

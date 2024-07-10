@@ -1,33 +1,34 @@
 ---
 title: Average Directional Index (ADX)
+description: Created by J. Welles Wilder, the Directional Movement Index (DMI) and Average Directional Movement Index (ADX) is a measure of price directional movement.  It includes upward and downward indicators, and is often used to measure strength of trend.
 permalink: /indicators/Adx/
-layout: default
+image: /assets/charts/AdIndex.png
+type: price-trend
+layout: indicator
 ---
 
 # {{ page.title }}
 
-Created by J. Welles Wilder, the [Average Directional Movement Index](https://en.wikipedia.org/wiki/Average_directional_movement_index) is a measure of price directional movement.  It includes upward and downward indicators, and is often used to measure strength of trend.
-[[Discuss] :speech_balloon:]({{site.github.repository_url}}/discussions/270 "Community discussion about this indicator")
+Created by J. Welles Wilder, the Directional Movement Index (DMI) and [Average Directional Movement Index](https://en.wikipedia.org/wiki/Average_directional_movement_index) (ADX) is a measure of price directional movement.  It includes upward and downward indicators, and is often used to measure strength of trend.
+[[Discuss] &#128172;]({{site.github.repository_url}}/discussions/270 "Community discussion about this indicator")
 
-![image]({{site.baseurl}}/assets/charts/Adx.png)
+![chart for {{page.title}}]({{site.baseurl}}{{page.image}})
 
 ```csharp
-// usage
+// C# usage syntax
 IEnumerable<AdxResult> results =
-  quotes.GetAdx(lookbackPeriods);  
+  quotes.GetAdx(lookbackPeriods);
 ```
 
 ## Parameters
 
-| name | type | notes
-| -- |-- |--
-| `lookbackPeriods` | int | Number of periods (`N`) to consider.  Must be greater than 1.  Default is 14.
+**`lookbackPeriods`** _`int`_ - Number of periods (`N`) to consider.  Must be greater than 1.  Default is 14.
 
 ### Historical quotes requirements
 
 You must have at least `2×N+100` periods of `quotes` to allow for smoothing convergence.  We generally recommend you use at least `2×N+250` data points prior to the intended usage date for better precision.
 
-`quotes` is an `IEnumerable<TQuote>` collection of historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
+`quotes` is a collection of generic `TQuote` historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
 
 ## Response
 
@@ -40,31 +41,38 @@ IEnumerable<AdxResult>
 - It does not return a single incremental indicator value.
 - The first `2×N-1` periods will have `null` values for `Adx` since there's not enough data to calculate.
 
-:hourglass: **Convergence Warning**: The first `2×N+100` periods will have decreasing magnitude, convergence-related precision errors that can be as high as ~5% deviation in indicator values for earlier periods.
+>&#9886; **Convergence warning**: The first `2×N+100` periods will have decreasing magnitude, convergence-related precision errors that can be as high as ~5% deviation in indicator values for earlier periods.
 
 ### AdxResult
 
-| name | type | notes
-| -- |-- |--
-| `Date` | DateTime | Date
-| `Pdi` | decimal | Plus Directional Index (+DI) for `N` lookback periods
-| `Mdi` | decimal | Minus Directional Index (-DI) for `N` lookback periods
-| `Adx` | decimal | Average Directional Index (ADX) for `N` lookback periods
+**`Date`** _`DateTime`_ - Date from evaluated `TQuote`
+
+**`Pdi`** _`double`_ - Plus Directional Index (+DI)
+
+**`Mdi`** _`double`_ - Minus Directional Index (-DI)
+
+**`Adx`** _`double`_ - Average Directional Index (ADX)
+
+**`Adxr`** _`double`_ - Average Directional Index Rating (ADXR)
 
 ### Utilities
 
+- [.Condense()]({{site.baseurl}}/utilities#condense)
 - [.Find(lookupDate)]({{site.baseurl}}/utilities#find-indicator-result-by-date)
 - [.RemoveWarmupPeriods()]({{site.baseurl}}/utilities#remove-warmup-periods)
 - [.RemoveWarmupPeriods(qty)]({{site.baseurl}}/utilities#remove-warmup-periods)
 
-See [Utilities and Helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
+See [Utilities and helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
 
-## Example
+## Chaining
+
+Results can be further processed on `Adx` with additional chain-enabled indicators.
 
 ```csharp
-// fetch historical quotes from your feed (your method)
-IEnumerable<Quote> quotes = GetHistoryFromFeed("SPY");
-
-// calculate 14-period ADX
-IEnumerable<AdxResult> results = quotes.GetAdx(14);
+// example
+var results = quotes
+    .GetAdx(..)
+    .GetRsi(..);
 ```
+
+This indicator must be generated from `quotes` and **cannot** be generated from results of another chain-enabled indicator or method.

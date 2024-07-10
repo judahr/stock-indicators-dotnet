@@ -1,100 +1,152 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Skender.Stock.Indicators;
+namespace Tests.Indicators;
 
-namespace Internal.Tests
+[TestClass]
+public class ConnorsRsiTests : TestBase
 {
-    [TestClass]
-    public class ConnorsRsi : TestBase
+    [TestMethod]
+    public void Standard()
     {
+        int rsiPeriods = 3;
+        int streakPeriods = 2;
+        int rankPeriods = 100;
+        int startPeriod = Math.Max(rsiPeriods, Math.Max(streakPeriods, rankPeriods)) + 2;
 
-        [TestMethod]
-        public void Standard()
-        {
-            int rsiPeriods = 3;
-            int streakPeriods = 2;
-            int rankPeriods = 100;
-            int startPeriod = Math.Max(rsiPeriods, Math.Max(streakPeriods, rankPeriods)) + 2;
+        List<ConnorsRsiResult> results1 =
+            quotes.GetConnorsRsi(rsiPeriods, streakPeriods, rankPeriods)
+            .ToList();
 
-            List<ConnorsRsiResult> results1 =
-                quotes.GetConnorsRsi(rsiPeriods, streakPeriods, rankPeriods)
-                .ToList();
+        // proper quantities
+        Assert.AreEqual(502, results1.Count);
+        Assert.AreEqual(502 - startPeriod + 1, results1.Count(x => x.ConnorsRsi != null));
 
-            // assertions
+        // sample value
+        ConnorsRsiResult r1 = results1[501];
+        Assert.AreEqual(68.8087, r1.Rsi.Round(4));
+        Assert.AreEqual(67.4899, r1.RsiStreak.Round(4));
+        Assert.AreEqual(88.0000, r1.PercentRank.Round(4));
+        Assert.AreEqual(74.7662, r1.ConnorsRsi.Round(4));
 
-            // proper quantities
-            // should always be the same number of results as there is quotes
-            Assert.AreEqual(502, results1.Count);
-            Assert.AreEqual(502 - startPeriod + 1, results1.Where(x => x.ConnorsRsi != null).Count());
+        // different parameters
+        List<ConnorsRsiResult> results2 = quotes.GetConnorsRsi(14, 20, 10).ToList();
+        ConnorsRsiResult r2 = results2[501];
+        Assert.AreEqual(42.0773, r2.Rsi.Round(4));
+        Assert.AreEqual(52.7386, r2.RsiStreak.Round(4));
+        Assert.AreEqual(90.0000, r2.PercentRank.Round(4));
+        Assert.AreEqual(61.6053, r2.ConnorsRsi.Round(4));
+    }
 
-            // sample value
-            ConnorsRsiResult r1 = results1[501];
-            Assert.AreEqual(68.8087m, Math.Round((decimal)r1.RsiClose, 4));
-            Assert.AreEqual(67.4899m, Math.Round((decimal)r1.RsiStreak, 4));
-            Assert.AreEqual(88.0000m, Math.Round((decimal)r1.PercentRank, 4));
-            Assert.AreEqual(74.7662m, Math.Round((decimal)r1.ConnorsRsi, 4));
+    [TestMethod]
+    public void UseTuple()
+    {
+        List<ConnorsRsiResult> results = quotes
+            .Use(CandlePart.Close)
+            .GetConnorsRsi()
+            .ToList();
 
-            // different parameters
-            List<ConnorsRsiResult> results2 = quotes.GetConnorsRsi(14, 20, 10).ToList();
-            ConnorsRsiResult r2 = results2[501];
-            Assert.AreEqual(42.0773m, Math.Round((decimal)r2.RsiClose, 4));
-            Assert.AreEqual(52.7386m, Math.Round((decimal)r2.RsiStreak, 4));
-            Assert.AreEqual(90.0000m, Math.Round((decimal)r2.PercentRank, 4));
-            Assert.AreEqual(61.6053m, Math.Round((decimal)r2.ConnorsRsi, 4));
-        }
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(401, results.Count(x => x.ConnorsRsi != null));
+    }
 
-        [TestMethod]
-        public void BadData()
-        {
-            IEnumerable<ConnorsRsiResult> r = Indicator.GetConnorsRsi(badQuotes, 4, 3, 25);
-            Assert.AreEqual(502, r.Count());
-        }
+    [TestMethod]
+    public void TupleNaN()
+    {
+        List<ConnorsRsiResult> r = tupleNanny
+            .GetConnorsRsi()
+            .ToList();
 
-        [TestMethod]
-        public void Removed()
-        {
-            int rsiPeriods = 3;
-            int streakPeriods = 2;
-            int rankPeriods = 100;
+        Assert.AreEqual(200, r.Count);
+        Assert.AreEqual(0, r.Count(x => x.ConnorsRsi is double and double.NaN));
+    }
 
-            // TODO: I don't think this is right, inconsistent
-            int removePeriods = Math.Max(rsiPeriods, Math.Max(streakPeriods, rankPeriods)) + 2;
+    [TestMethod]
+    public void Chainee()
+    {
+        List<ConnorsRsiResult> results = quotes
+            .GetSma(2)
+            .GetConnorsRsi()
+            .ToList();
 
-            List<ConnorsRsiResult> results =
-                quotes.GetConnorsRsi(rsiPeriods, streakPeriods, rankPeriods)
-                .RemoveWarmupPeriods()
-                .ToList();
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(400, results.Count(x => x.ConnorsRsi != null));
+    }
 
-            // assertions
-            Assert.AreEqual(502 - removePeriods + 1, results.Count);
+    [TestMethod]
+    public void Chainor()
+    {
+        List<SmaResult> results = quotes
+            .GetConnorsRsi()
+            .GetSma(10)
+            .ToList();
 
-            ConnorsRsiResult last = results.LastOrDefault();
-            Assert.AreEqual(68.8087m, Math.Round((decimal)last.RsiClose, 4));
-            Assert.AreEqual(67.4899m, Math.Round((decimal)last.RsiStreak, 4));
-            Assert.AreEqual(88.0000m, Math.Round((decimal)last.PercentRank, 4));
-            Assert.AreEqual(74.7662m, Math.Round((decimal)last.ConnorsRsi, 4));
-        }
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(392, results.Count(x => x.Sma != null));
+    }
 
-        [TestMethod]
-        public void Exceptions()
-        {
-            // bad RSI period
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
-                Indicator.GetConnorsRsi(quotes, 1, 2, 100));
+    [TestMethod]
+    public void BadData()
+    {
+        List<ConnorsRsiResult> r = badQuotes
+            .GetConnorsRsi(4, 3, 25)
+            .ToList();
 
-            // bad Streak period
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
-                Indicator.GetConnorsRsi(quotes, 3, 1, 100));
+        Assert.AreEqual(502, r.Count);
+        Assert.AreEqual(0, r.Count(x => x.Rsi is double and double.NaN));
+    }
 
-            // bad Rank period
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
-                Indicator.GetConnorsRsi(quotes, 3, 2, 1));
+    [TestMethod]
+    public void NoQuotes()
+    {
+        List<ConnorsRsiResult> r0 = noquotes
+            .GetConnorsRsi()
+            .ToList();
 
-            // insufficient quotes
-            Assert.ThrowsException<BadQuotesException>(() =>
-                Indicator.GetConnorsRsi(TestData.GetDefault(102), 3, 2, 100));
-        }
+        Assert.AreEqual(0, r0.Count);
+
+        List<ConnorsRsiResult> r1 = onequote
+            .GetConnorsRsi()
+            .ToList();
+
+        Assert.AreEqual(1, r1.Count);
+    }
+
+    [TestMethod]
+    public void Removed()
+    {
+        int rsiPeriods = 3;
+        int streakPeriods = 2;
+        int rankPeriods = 100;
+
+        // TODO: I don't think this is right, inconsistent
+        int removePeriods = Math.Max(rsiPeriods, Math.Max(streakPeriods, rankPeriods)) + 2;
+
+        List<ConnorsRsiResult> results =
+            quotes.GetConnorsRsi(rsiPeriods, streakPeriods, rankPeriods)
+            .RemoveWarmupPeriods()
+            .ToList();
+
+        // assertions
+        Assert.AreEqual(502 - removePeriods + 1, results.Count);
+
+        ConnorsRsiResult last = results.LastOrDefault();
+        Assert.AreEqual(68.8087, last.Rsi.Round(4));
+        Assert.AreEqual(67.4899, last.RsiStreak.Round(4));
+        Assert.AreEqual(88.0000, last.PercentRank.Round(4));
+        Assert.AreEqual(74.7662, last.ConnorsRsi.Round(4));
+    }
+
+    [TestMethod]
+    public void Exceptions()
+    {
+        // bad RSI period
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+            quotes.GetConnorsRsi(1, 2, 100));
+
+        // bad Streak period
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+            quotes.GetConnorsRsi(3, 1, 100));
+
+        // bad Rank period
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+            quotes.GetConnorsRsi(3, 2, 1));
     }
 }

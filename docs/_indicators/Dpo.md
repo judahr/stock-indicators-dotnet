@@ -1,33 +1,34 @@
 ---
 title: Detrended Price Oscillator (DPO)
+description: Detrended Price Oscillator depicts the difference between price and an offset simple moving average.  It is used to identify trend cycles and duration.
 permalink: /indicators/Dpo/
-layout: default
+image: /assets/charts/Dpo.png
+type: oscillator
+layout: indicator
 ---
 
 # {{ page.title }}
 
 [Detrended Price Oscillator](https://en.wikipedia.org/wiki/Detrended_price_oscillator) depicts the difference between price and an offset simple moving average.  It is used to identify trend cycles and duration.
-[[Discuss] :speech_balloon:]({{site.github.repository_url}}/discussions/551 "Community discussion about this indicator")
+[[Discuss] &#128172;]({{site.github.repository_url}}/discussions/551 "Community discussion about this indicator")
 
-![image]({{site.baseurl}}/assets/charts/Dpo.png)
+![chart for {{page.title}}]({{site.baseurl}}{{page.image}})
 
 ```csharp
-// usage
+// C# usage syntax
 IEnumerable<DpoResult> results =
   quotes.GetDpo(lookbackPeriods);
 ```
 
 ## Parameters
 
-| name | type | notes
-| -- |-- |--
-| `lookbackPeriods` | int | Number of periods (`N`) in the moving average.  Must be greater than 0.
+**`lookbackPeriods`** _`int`_ - Number of periods (`N`) in the moving average.  Must be greater than 0.
 
 ### Historical quotes requirements
 
-You must have at least `N` historical quotes.
+You must have at least `N` historical quotes to cover the warmup periods.
 
-`quotes` is an `IEnumerable<TQuote>` collection of historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
+`quotes` is a collection of generic `TQuote` historical price quotes.  It should have a consistent frequency (day, hour, minute, etc).  See [the Guide]({{site.baseurl}}/guide/#historical-quotes) for more information.
 
 ## Response
 
@@ -42,26 +43,36 @@ IEnumerable<DpoResult>
 
 ### DpoResult
 
-| name | type | notes
-| -- |-- |--
-| `Date` | DateTime | Date
-| `Sma` | decimal | Simple moving average offset by `N/2+1` periods
-| `Dpo` | decimal | Detrended Price Oscillator (DPO)
+**`Date`** _`DateTime`_ - Date from evaluated `TQuote`
+
+**`Sma`** _`double`_ - Simple moving average offset by `N/2+1` periods
+
+**`Dpo`** _`double`_ - Detrended Price Oscillator (DPO)
 
 ### Utilities
 
-- [.ConvertToQuotes()]({{site.baseurl}}/utilities#convert-to-quotes)
+- [.Condense()]({{site.baseurl}}/utilities#condense)
 - [.Find(lookupDate)]({{site.baseurl}}/utilities#find-indicator-result-by-date)
 - [.RemoveWarmupPeriods(qty)]({{site.baseurl}}/utilities#remove-warmup-periods)
 
-See [Utilities and Helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
+See [Utilities and helpers]({{site.baseurl}}/utilities#utilities-for-indicator-results) for more information.
 
-## Example
+## Chaining
+
+This indicator may be generated from any chain-enabled indicator or method.
 
 ```csharp
-// fetch historical quotes from your feed (your method)
-IEnumerable<Quote> quotes = GetHistoryFromFeed("SPY");
+// example
+var results = quotes
+    .Use(CandlePart.HL2)
+    .GetDpo(..);
+```
 
-// calculate
-IEnumerable<DpoResult> results = quotes.GetDpo(14);
+Results can be further processed on `Dpo` with additional chain-enabled indicators.
+
+```csharp
+// example
+var results = quotes
+    .GetDpo(..)
+    .GetRsi(..);
 ```

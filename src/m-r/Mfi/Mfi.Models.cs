@@ -1,10 +1,14 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class MfiResult : ResultBase, IReusableResult
 {
-    [Serializable]
-    public class MfiResult : ResultBase
+    public MfiResult(DateTime date)
     {
-        public decimal? Mfi { get; set; }
+        Date = date;
     }
+
+    public double? Mfi { get; set; }
+
+    double? IReusableResult.Value => Mfi;
 }

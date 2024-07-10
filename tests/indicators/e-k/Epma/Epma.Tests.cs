@@ -1,75 +1,128 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Skender.Stock.Indicators;
+namespace Tests.Indicators;
 
-namespace Internal.Tests
+[TestClass]
+public class EpmaTests : TestBase
 {
-    [TestClass]
-    public class Epma : TestBase
+    [TestMethod]
+    public void Standard()
     {
+        List<EpmaResult> results = quotes
+            .GetEpma(20)
+            .ToList();
 
-        [TestMethod]
-        public void Standard()
-        {
-            List<EpmaResult> results = quotes.GetEpma(20).ToList();
+        // proper quantities
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(483, results.Count(x => x.Epma != null));
 
-            // assertions
+        // sample values
+        EpmaResult r1 = results[18];
+        Assert.IsNull(r1.Epma);
 
-            // proper quantities
-            // should always be the same number of results as there is quotes
-            Assert.AreEqual(502, results.Count);
-            Assert.AreEqual(483, results.Where(x => x.Epma != null).Count());
+        EpmaResult r2 = results[19];
+        Assert.AreEqual(215.6189, r2.Epma.Round(4));
 
-            // sample values
-            EpmaResult r1 = results[18];
-            Assert.IsNull(r1.Epma);
+        EpmaResult r3 = results[149];
+        Assert.AreEqual(236.7060, r3.Epma.Round(4));
 
-            EpmaResult r2 = results[19];
-            Assert.AreEqual(215.6189m, Math.Round((decimal)r2.Epma, 4));
+        EpmaResult r4 = results[249];
+        Assert.AreEqual(258.5179, r4.Epma.Round(4));
 
-            EpmaResult r3 = results[149];
-            Assert.AreEqual(236.7060m, Math.Round((decimal)r3.Epma, 4));
-
-            EpmaResult r4 = results[249];
-            Assert.AreEqual(258.5179m, Math.Round((decimal)r4.Epma, 4));
-
-            EpmaResult r5 = results[501];
-            Assert.AreEqual(235.8131m, Math.Round((decimal)r5.Epma, 4));
-        }
-
-        [TestMethod]
-        public void BadData()
-        {
-            IEnumerable<EpmaResult> r = Indicator.GetEpma(badQuotes, 15);
-            Assert.AreEqual(502, r.Count());
-        }
-
-        [TestMethod]
-        public void Removed()
-        {
-            List<EpmaResult> results = quotes.GetEpma(20)
-                .RemoveWarmupPeriods()
-                .ToList();
-
-            // assertions
-            Assert.AreEqual(502 - 19, results.Count);
-
-            EpmaResult last = results.LastOrDefault();
-            Assert.AreEqual(235.8131m, Math.Round((decimal)last.Epma, 4));
-        }
-
-        [TestMethod]
-        public void Exceptions()
-        {
-            // bad lookback period
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
-                Indicator.GetEpma(quotes, 0));
-
-            // insufficient quotes
-            Assert.ThrowsException<BadQuotesException>(() =>
-                Indicator.GetEpma(TestData.GetDefault(9), 10));
-        }
+        EpmaResult r5 = results[501];
+        Assert.AreEqual(235.8131, r5.Epma.Round(4));
     }
+
+    [TestMethod]
+    public void UseTuple()
+    {
+        List<EpmaResult> results = quotes
+            .Use(CandlePart.Close)
+            .GetEpma(20)
+            .ToList();
+
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(483, results.Count(x => x.Epma != null));
+    }
+
+    [TestMethod]
+    public void TupleNaN()
+    {
+        List<EpmaResult> r = tupleNanny
+            .GetEpma(6)
+            .ToList();
+
+        Assert.AreEqual(200, r.Count);
+        Assert.AreEqual(0, r.Count(x => x.Epma is double and double.NaN));
+    }
+
+    [TestMethod]
+    public void Chainee()
+    {
+        List<EpmaResult> results = quotes
+            .GetSma(2)
+            .GetEpma(20)
+            .ToList();
+
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(482, results.Count(x => x.Epma != null));
+    }
+
+    [TestMethod]
+    public void Chainor()
+    {
+        List<SmaResult> results = quotes
+            .GetEpma(20)
+            .GetSma(10)
+            .ToList();
+
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(474, results.Count(x => x.Sma != null));
+    }
+
+    [TestMethod]
+    public void BadData()
+    {
+        List<EpmaResult> r = badQuotes
+            .GetEpma(15)
+            .ToList();
+
+        Assert.AreEqual(502, r.Count);
+        Assert.AreEqual(0, r.Count(x => x.Epma is double and double.NaN));
+    }
+
+    [TestMethod]
+    public void NoQuotes()
+    {
+        List<EpmaResult> r0 = noquotes
+            .GetEpma(5)
+            .ToList();
+
+        Assert.AreEqual(0, r0.Count);
+
+        List<EpmaResult> r1 = onequote
+            .GetEpma(5)
+            .ToList();
+
+        Assert.AreEqual(1, r1.Count);
+    }
+
+    [TestMethod]
+    public void Removed()
+    {
+        List<EpmaResult> results = quotes
+            .GetEpma(20)
+            .RemoveWarmupPeriods()
+            .ToList();
+
+        // assertions
+        Assert.AreEqual(502 - 19, results.Count);
+
+        EpmaResult last = results.LastOrDefault();
+        Assert.AreEqual(235.8131, last.Epma.Round(4));
+    }
+
+    // bad lookback period
+    [TestMethod]
+    public void Exceptions()
+        => Assert.ThrowsException<ArgumentOutOfRangeException>(()
+            => quotes.GetEpma(0));
 }

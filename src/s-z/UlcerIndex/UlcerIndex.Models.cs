@@ -1,10 +1,14 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class UlcerIndexResult : ResultBase, IReusableResult
 {
-    [Serializable]
-    public class UlcerIndexResult : ResultBase
+    public UlcerIndexResult(DateTime date)
     {
-        public decimal? UI { get; set; }  // ulcer index
+        Date = date;
     }
+
+    public double? UI { get; set; } // ulcer index
+
+    double? IReusableResult.Value => UI;
 }

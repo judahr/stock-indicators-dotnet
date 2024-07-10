@@ -1,12 +1,14 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class StarcBandsResult : ResultBase
 {
-    [Serializable]
-    public class StarcBandsResult : ResultBase
+    public StarcBandsResult(DateTime date)
     {
-        public decimal? UpperBand { get; set; }
-        public decimal? Centerline { get; set; }
-        public decimal? LowerBand { get; set; }
+        Date = date;
     }
+
+    public double? UpperBand { get; set; }
+    public double? Centerline { get; set; }
+    public double? LowerBand { get; set; }
 }

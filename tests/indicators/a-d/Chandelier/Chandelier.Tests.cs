@@ -1,83 +1,104 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Skender.Stock.Indicators;
+namespace Tests.Indicators;
 
-namespace Internal.Tests
+[TestClass]
+public class ChandelierTests : TestBase
 {
-    [TestClass]
-    public class Chandeleir : TestBase
+    [TestMethod]
+    public void Standard()
     {
+        int lookbackPeriods = 22;
 
-        [TestMethod]
-        public void Standard()
-        {
-            int lookbackPeriods = 22;
+        List<ChandelierResult> longResult =
+            quotes.GetChandelier(lookbackPeriods, 3)
+            .ToList();
 
-            List<ChandelierResult> longResult =
-                quotes.GetChandelier(lookbackPeriods, 3.0m)
-                .ToList();
+        // proper quantities
+        Assert.AreEqual(502, longResult.Count);
+        Assert.AreEqual(480, longResult.Count(x => x.ChandelierExit != null));
 
-            // assertions
+        // sample values (long)
+        ChandelierResult a = longResult[501];
+        Assert.AreEqual(256.5860, a.ChandelierExit.Round(4));
 
-            // proper quantities
-            // should always be the same number of results as there is quotes
-            Assert.AreEqual(502, longResult.Count);
-            Assert.AreEqual(481, longResult.Where(x => x.ChandelierExit != null).Count());
+        ChandelierResult b = longResult[492];
+        Assert.AreEqual(259.0480, b.ChandelierExit.Round(4));
 
-            // sample values (long)
-            ChandelierResult a = longResult[501];
-            Assert.AreEqual(256.5860m, Math.Round((decimal)a.ChandelierExit, 4));
+        // short
+        List<ChandelierResult> shortResult =
+            quotes.GetChandelier(lookbackPeriods, 3, ChandelierType.Short)
+            .ToList();
 
-            ChandelierResult b = longResult[492];
-            Assert.AreEqual(259.0480m, Math.Round((decimal)b.ChandelierExit, 4));
+        ChandelierResult c = shortResult[501];
+        Assert.AreEqual(246.4240, c.ChandelierExit.Round(4));
+    }
 
-            // short
-            List<ChandelierResult> shortResult =
-                Indicator.GetChandelier(quotes, lookbackPeriods, 3.0m, ChandelierType.Short)
-                .ToList();
+    [TestMethod]
+    public void Chainor()
+    {
+        List<SmaResult> results = quotes
+            .GetChandelier(22)
+            .GetSma(10)
+            .ToList();
 
-            ChandelierResult c = shortResult[501];
-            Assert.AreEqual(246.4240m, Math.Round((decimal)c.ChandelierExit, 4));
-        }
+        Assert.AreEqual(502, results.Count);
+        Assert.AreEqual(471, results.Count(x => x.Sma != null));
+    }
 
-        [TestMethod]
-        public void BadData()
-        {
-            IEnumerable<ChandelierResult> r = Indicator.GetChandelier(badQuotes, 15, 2m);
-            Assert.AreEqual(502, r.Count());
-        }
+    [TestMethod]
+    public void BadData()
+    {
+        List<ChandelierResult> r = badQuotes
+            .GetChandelier(15, 2)
+            .ToList();
 
-        [TestMethod]
-        public void Removed()
-        {
-            List<ChandelierResult> longResult =
-                quotes.GetChandelier(22, 3.0m)
-                    .RemoveWarmupPeriods()
-                    .ToList();
+        Assert.AreEqual(502, r.Count);
+        Assert.AreEqual(0, r.Count(x => x.ChandelierExit is double and double.NaN));
+    }
 
-            // assertions
-            Assert.AreEqual(502 - 21, longResult.Count);
+    [TestMethod]
+    public void NoQuotes()
+    {
+        List<ChandelierResult> r0 = noquotes
+            .GetChandelier()
+            .ToList();
 
-            ChandelierResult last = longResult.LastOrDefault();
-            Assert.AreEqual(256.5860m, Math.Round((decimal)last.ChandelierExit, 4));
-        }
+        Assert.AreEqual(0, r0.Count);
 
-        [TestMethod]
-        public void Exceptions()
-        {
-            // bad lookback period
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
-                Indicator.GetChandelier(quotes, 0));
+        List<ChandelierResult> r1 = onequote
+            .GetChandelier()
+            .ToList();
 
-            // bad multiplier
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
-                Indicator.GetChandelier(quotes, 25, 0));
+        Assert.AreEqual(1, r1.Count);
+    }
 
-            // insufficient quotes
-            Assert.ThrowsException<BadQuotesException>(() =>
-                Indicator.GetChandelier(TestData.GetDefault(30), 30));
-        }
+    [TestMethod]
+    public void Removed()
+    {
+        List<ChandelierResult> longResult = quotes
+            .GetChandelier(22, 3)
+            .RemoveWarmupPeriods()
+            .ToList();
+
+        // assertions
+        Assert.AreEqual(502 - 22, longResult.Count);
+
+        ChandelierResult last = longResult.LastOrDefault();
+        Assert.AreEqual(256.5860, last.ChandelierExit.Round(4));
+    }
+
+    [TestMethod]
+    public void Exceptions()
+    {
+        // bad lookback period
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+            quotes.GetChandelier(0));
+
+        // bad multiplier
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+            quotes.GetChandelier(25, 0));
+
+        // bad type
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+            quotes.GetChandelier(25, 2, (ChandelierType)int.MaxValue));
     }
 }

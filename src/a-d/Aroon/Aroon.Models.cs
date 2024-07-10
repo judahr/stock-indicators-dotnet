@@ -1,12 +1,16 @@
-﻿using System;
+namespace Skender.Stock.Indicators;
 
-namespace Skender.Stock.Indicators
+[Serializable]
+public sealed class AroonResult : ResultBase, IReusableResult
 {
-    [Serializable]
-    public class AroonResult : ResultBase
+    public AroonResult(DateTime date)
     {
-        public decimal? AroonUp { get; set; }
-        public decimal? AroonDown { get; set; }
-        public decimal? Oscillator { get; set; }
+        Date = date;
     }
+
+    public double? AroonUp { get; set; }
+    public double? AroonDown { get; set; }
+    public double? Oscillator { get; set; }
+
+    double? IReusableResult.Value => Oscillator;
 }
