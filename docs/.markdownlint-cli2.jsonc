@@ -1,0 +1,33 @@
+// modifications from base
+{
+  "gitignore": true,
+  "ignores": [
+    // not otherwise in root .gitignore
+    ".offline"
+  ],
+  "config": {
+    // MD028: Allow blank lines in blockquotes, since
+    // it can occur when we have adjacent warning blocks
+    "MD028": false,
+    "MD033": {
+      "allowed_elements": [
+        "code",
+        "details",
+        "summary",
+        "br",
+        "sub",
+        "sup",
+        "kbd",
+        "abbr",
+        "a",
+        "img",
+        "p",
+        "h1",
+        "ul",
+        "li",
+        "nav"
+      ]
+    },
+    "MD041": false  // accomodate Jekyll markdown
+  }
+}

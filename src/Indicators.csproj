@@ -1,21 +1,26 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+<<<<<<< HEAD
     <TargetFrameworks>net8.0;netstandard2.1;netstandard2.0</TargetFrameworks>
+=======
+
+    <TargetFrameworks>net10.0;net9.0;net8.0;net6.0;netstandard2.1;netstandard2.0</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+
+    <AssemblyName>Skender.Stock.Indicators</AssemblyName>
+    <RootNamespace>Skender.Stock.Indicators</RootNamespace>
+    <NeutralLanguage>en-US</NeutralLanguage>
+>>>>>>> d05267792a0247ab2f3734598205bfb35ac990ef
 
     <Authors>Dave Skender</Authors>
     <Product>Stock Indicators for .NET</Product>
     <Copyright>@2020 Dave Skender</Copyright>
-    <Description>Stock Indicators for .NET.  Transform financial market price quotes into technical analysis indicators such as MACD, Stochastic RSI, Average True Range, Parabolic SAR, etc.  Nothing more.</Description>
+    <Description>Transform financial market price data into technical analysis indicators such as MACD, Stochastic RSI, Average True Range, Parabolic SAR, and more.</Description>
 
     <RepositoryUrl>https://github.com/DaveSkender/Stock.Indicators</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-
-    <AssemblyName>Skender.Stock.Indicators</AssemblyName>
-    <RootNamespace>Skender.Stock.Indicators</RootNamespace>
-    <LangVersion>12.0</LangVersion>
-    <NeutralLanguage>en-US</NeutralLanguage>
 
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -34,7 +39,6 @@
        Alligator;Gator;Fractal;Chaos;Choppiness;Endpoint;WMA;ZigZag;.NET;C#;Library;Package;
     </PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>https://github.com/DaveSkender/Stock.Indicators/releases</PackageReleaseNotes>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageIcon>icon.png</PackageIcon>
 
@@ -77,7 +81,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

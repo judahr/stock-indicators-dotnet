@@ -11,11 +11,11 @@ public class GatorTests : TestBase
             .ToList();
 
         // proper quantities
-        Assert.AreEqual(502, results.Count);
-        Assert.AreEqual(482, results.Count(x => x.Upper != null));
-        Assert.AreEqual(490, results.Count(x => x.Lower != null));
-        Assert.AreEqual(481, results.Count(x => x.UpperIsExpanding != null));
-        Assert.AreEqual(489, results.Count(x => x.LowerIsExpanding != null));
+        Assert.HasCount(502, results);
+        Assert.AreEqual(482, results.Count(static x => x.Upper != null));
+        Assert.AreEqual(490, results.Count(static x => x.Lower != null));
+        Assert.AreEqual(481, results.Count(static x => x.UpperIsExpanding != null));
+        Assert.AreEqual(489, results.Count(static x => x.LowerIsExpanding != null));
 
         // sample values
         GatorResult r11 = results[11];
@@ -82,11 +82,11 @@ public class GatorTests : TestBase
             .ToList();
 
         // proper quantities
-        Assert.AreEqual(502, results.Count);
-        Assert.AreEqual(482, results.Count(x => x.Upper != null));
-        Assert.AreEqual(490, results.Count(x => x.Lower != null));
-        Assert.AreEqual(481, results.Count(x => x.UpperIsExpanding != null));
-        Assert.AreEqual(489, results.Count(x => x.LowerIsExpanding != null));
+        Assert.HasCount(502, results);
+        Assert.AreEqual(482, results.Count(static x => x.Upper != null));
+        Assert.AreEqual(490, results.Count(static x => x.Lower != null));
+        Assert.AreEqual(481, results.Count(static x => x.UpperIsExpanding != null));
+        Assert.AreEqual(489, results.Count(static x => x.LowerIsExpanding != null));
 
         // sample values
         GatorResult r11 = results[11];
@@ -152,8 +152,8 @@ public class GatorTests : TestBase
             .GetGator()
             .ToList();
 
-        Assert.AreEqual(502, results.Count);
-        Assert.AreEqual(482, results.Count(x => x.Upper != null));
+        Assert.HasCount(502, results);
+        Assert.AreEqual(482, results.Count(static x => x.Upper != null));
     }
 
     [TestMethod]
@@ -163,8 +163,8 @@ public class GatorTests : TestBase
             .GetGator()
             .ToList();
 
-        Assert.AreEqual(200, r.Count);
-        Assert.AreEqual(0, r.Count(x => x.Upper is double and double.NaN));
+        Assert.HasCount(200, r);
+        Assert.IsEmpty(r.Where(static x => x.Upper is double v && double.IsNaN(v)));
     }
 
     [TestMethod]
@@ -175,8 +175,8 @@ public class GatorTests : TestBase
             .GetGator()
             .ToList();
 
-        Assert.AreEqual(502, results.Count);
-        Assert.AreEqual(481, results.Count(x => x.Upper != null));
+        Assert.HasCount(502, results);
+        Assert.AreEqual(481, results.Count(static x => x.Upper != null));
     }
 
     [TestMethod]
@@ -186,8 +186,8 @@ public class GatorTests : TestBase
             .GetGator()
             .ToList();
 
-        Assert.AreEqual(502, r.Count);
-        Assert.AreEqual(0, r.Count(x => x.Upper is double and double.NaN));
+        Assert.HasCount(502, r);
+        Assert.IsEmpty(r.Where(static x => x.Upper is double v && double.IsNaN(v)));
     }
 
     [TestMethod]
@@ -197,13 +197,13 @@ public class GatorTests : TestBase
             .GetGator()
             .ToList();
 
-        Assert.AreEqual(0, r0.Count);
+        Assert.IsEmpty(r0);
 
         List<GatorResult> r1 = onequote
             .GetGator()
             .ToList();
 
-        Assert.AreEqual(1, r1.Count);
+        Assert.HasCount(1, r1);
     }
 
     [TestMethod]
@@ -215,7 +215,7 @@ public class GatorTests : TestBase
             .ToList();
 
         // assertions
-        Assert.AreEqual(490, results.Count);
+        Assert.HasCount(490, results);
 
         GatorResult last = results.LastOrDefault();
         Assert.AreEqual(7.4538, Math.Round(last.Upper.Value, 4));
@@ -233,7 +233,7 @@ public class GatorTests : TestBase
             .ToList();
 
         // assertions
-        Assert.AreEqual(502 - 150, results.Count);
+        Assert.HasCount(502 - 150, results);
 
         GatorResult last = results.LastOrDefault();
         Assert.AreEqual(7.4538, Math.Round(last.Upper.Value, 4));

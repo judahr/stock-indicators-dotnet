@@ -11,8 +11,8 @@ public class DemaTests : TestBase
             .ToList();
 
         // proper quantities
-        Assert.AreEqual(502, results.Count);
-        Assert.AreEqual(483, results.Count(x => x.Dema != null));
+        Assert.HasCount(502, results);
+        Assert.AreEqual(483, results.Count(static x => x.Dema != null));
 
         // sample values
         DemaResult r25 = results[25];
@@ -36,8 +36,8 @@ public class DemaTests : TestBase
             .GetDema(20)
             .ToList();
 
-        Assert.AreEqual(502, results.Count);
-        Assert.AreEqual(483, results.Count(x => x.Dema != null));
+        Assert.HasCount(502, results);
+        Assert.AreEqual(483, results.Count(static x => x.Dema != null));
     }
 
     [TestMethod]
@@ -47,8 +47,8 @@ public class DemaTests : TestBase
             .GetDema(6)
             .ToList();
 
-        Assert.AreEqual(200, r.Count);
-        Assert.AreEqual(0, r.Count(x => x.Dema is double and double.NaN));
+        Assert.HasCount(200, r);
+        Assert.IsEmpty(r.Where(static x => x.Dema is double v && double.IsNaN(v)));
     }
 
     [TestMethod]
@@ -59,8 +59,8 @@ public class DemaTests : TestBase
             .GetDema(20)
             .ToList();
 
-        Assert.AreEqual(502, results.Count);
-        Assert.AreEqual(482, results.Count(x => x.Dema != null));
+        Assert.HasCount(502, results);
+        Assert.AreEqual(482, results.Count(static x => x.Dema != null));
     }
 
     [TestMethod]
@@ -71,8 +71,8 @@ public class DemaTests : TestBase
             .GetSma(10)
             .ToList();
 
-        Assert.AreEqual(502, results.Count);
-        Assert.AreEqual(474, results.Count(x => x.Sma != null));
+        Assert.HasCount(502, results);
+        Assert.AreEqual(474, results.Count(static x => x.Sma != null));
     }
 
     [TestMethod]
@@ -82,8 +82,8 @@ public class DemaTests : TestBase
             .GetDema(15)
             .ToList();
 
-        Assert.AreEqual(502, r.Count);
-        Assert.AreEqual(0, r.Count(x => x.Dema is double and double.NaN));
+        Assert.HasCount(502, r);
+        Assert.IsEmpty(r.Where(static x => x.Dema is double v && double.IsNaN(v)));
     }
 
     [TestMethod]
@@ -93,13 +93,13 @@ public class DemaTests : TestBase
             .GetDema(5)
             .ToList();
 
-        Assert.AreEqual(0, r0.Count);
+        Assert.IsEmpty(r0);
 
         List<DemaResult> r1 = onequote
             .GetDema(5)
             .ToList();
 
-        Assert.AreEqual(1, r1.Count);
+        Assert.HasCount(1, r1);
     }
 
     [TestMethod]
@@ -111,7 +111,7 @@ public class DemaTests : TestBase
             .ToList();
 
         // assertions
-        Assert.AreEqual(502 - (40 + 100), results.Count);
+        Assert.HasCount(502 - (40 + 100), results);
 
         DemaResult last = results.LastOrDefault();
         Assert.AreEqual(241.1677, last.Dema.Round(4));
@@ -120,6 +120,6 @@ public class DemaTests : TestBase
     // bad lookback period
     [TestMethod]
     public void Exceptions() =>
-        Assert.ThrowsException<ArgumentOutOfRangeException>(()
-            => quotes.GetDema(0));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(
+            static () => quotes.GetDema(0));
 }

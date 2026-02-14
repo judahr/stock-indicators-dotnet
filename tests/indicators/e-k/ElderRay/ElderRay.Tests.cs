@@ -11,9 +11,9 @@ public class ElderRayTests : TestBase
             .ToList();
 
         // proper quantities
-        Assert.AreEqual(502, results.Count);
-        Assert.AreEqual(490, results.Count(x => x.BullPower != null));
-        Assert.AreEqual(490, results.Count(x => x.BearPower != null));
+        Assert.HasCount(502, results);
+        Assert.AreEqual(490, results.Count(static x => x.BullPower != null));
+        Assert.AreEqual(490, results.Count(static x => x.BearPower != null));
 
         // sample values
         ElderRayResult r1 = results[11];
@@ -55,8 +55,8 @@ public class ElderRayTests : TestBase
             .GetSma(10)
             .ToList();
 
-        Assert.AreEqual(502, results.Count);
-        Assert.AreEqual(481, results.Count(x => x.Sma != null));
+        Assert.HasCount(502, results);
+        Assert.AreEqual(481, results.Count(static x => x.Sma != null));
     }
 
     [TestMethod]
@@ -66,8 +66,8 @@ public class ElderRayTests : TestBase
             .GetElderRay()
             .ToList();
 
-        Assert.AreEqual(502, r.Count);
-        Assert.AreEqual(0, r.Count(x => x.BullPower is double and double.NaN));
+        Assert.HasCount(502, r);
+        Assert.IsEmpty(r.Where(static x => x.BullPower is double v && double.IsNaN(v)));
     }
 
     [TestMethod]
@@ -77,13 +77,13 @@ public class ElderRayTests : TestBase
             .GetElderRay()
             .ToList();
 
-        Assert.AreEqual(0, r0.Count);
+        Assert.IsEmpty(r0);
 
         List<ElderRayResult> r1 = onequote
             .GetElderRay()
             .ToList();
 
-        Assert.AreEqual(1, r1.Count);
+        Assert.HasCount(1, r1);
     }
 
     [TestMethod]
@@ -95,7 +95,7 @@ public class ElderRayTests : TestBase
             .ToList();
 
         // assertions
-        Assert.AreEqual(502 - (100 + 13), results.Count);
+        Assert.HasCount(502 - (100 + 13), results);
 
         ElderRayResult last = results.LastOrDefault();
         Assert.AreEqual(246.0129, last.Ema.Round(4));
@@ -106,6 +106,6 @@ public class ElderRayTests : TestBase
     // bad lookback period
     [TestMethod]
     public void Exceptions()
-        => Assert.ThrowsException<ArgumentOutOfRangeException>(()
-            => quotes.GetElderRay(0));
+        => Assert.ThrowsExactly<ArgumentOutOfRangeException>(
+            static () => quotes.GetElderRay(0));
 }

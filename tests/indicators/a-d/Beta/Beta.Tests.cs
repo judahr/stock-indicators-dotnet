@@ -11,10 +11,10 @@ public class BetaTests : TestBase
             .ToList();
 
         // proper quantities
-        Assert.AreEqual(502, results.Count);
-        Assert.AreEqual(482, results.Count(x => x.Beta != null));
-        Assert.AreEqual(482, results.Count(x => x.BetaUp != null));
-        Assert.AreEqual(482, results.Count(x => x.BetaDown != null));
+        Assert.HasCount(502, results);
+        Assert.AreEqual(482, results.Count(static x => x.Beta != null));
+        Assert.AreEqual(482, results.Count(static x => x.BetaUp != null));
+        Assert.AreEqual(482, results.Count(static x => x.BetaDown != null));
 
         // sample values
         BetaResult r19 = results[19];
@@ -56,8 +56,8 @@ public class BetaTests : TestBase
             .ToList();
 
         // proper quantities
-        Assert.AreEqual(502, results.Count);
-        Assert.AreEqual(482, results.Count(x => x.Beta != null));
+        Assert.HasCount(502, results);
+        Assert.AreEqual(482, results.Count(static x => x.Beta != null));
 
         // sample value
         BetaResult r = results[501];
@@ -72,8 +72,8 @@ public class BetaTests : TestBase
             .ToList();
 
         // proper quantities
-        Assert.AreEqual(502, results.Count);
-        Assert.AreEqual(482, results.Count(x => x.BetaUp != null));
+        Assert.HasCount(502, results);
+        Assert.AreEqual(482, results.Count(static x => x.BetaUp != null));
 
         // sample value
         BetaResult r = results[501];
@@ -88,8 +88,8 @@ public class BetaTests : TestBase
             .ToList();
 
         // proper quantities
-        Assert.AreEqual(502, results.Count);
-        Assert.AreEqual(482, results.Count(x => x.BetaDown != null));
+        Assert.HasCount(502, results);
+        Assert.AreEqual(482, results.Count(static x => x.BetaDown != null));
 
         // sample value
         BetaResult r = results[501];
@@ -104,8 +104,8 @@ public class BetaTests : TestBase
             .GetBeta(quotes.Use(CandlePart.Close), 20)
             .ToList();
 
-        Assert.AreEqual(502, results.Count);
-        Assert.AreEqual(482, results.Count(x => x.Beta != null));
+        Assert.HasCount(502, results);
+        Assert.AreEqual(482, results.Count(static x => x.Beta != null));
     }
 
     [TestMethod]
@@ -115,8 +115,8 @@ public class BetaTests : TestBase
             .GetBeta(tupleNanny, 6)
             .ToList();
 
-        Assert.AreEqual(200, r.Count);
-        Assert.AreEqual(0, r.Count(x => x.Beta is double and double.NaN));
+        Assert.HasCount(200, r);
+        Assert.IsEmpty(r.Where(static x => x.Beta is double v && double.IsNaN(v)));
     }
 
     [TestMethod]
@@ -127,8 +127,8 @@ public class BetaTests : TestBase
             .GetSma(10)
             .ToList();
 
-        Assert.AreEqual(502, results.Count);
-        Assert.AreEqual(473, results.Count(x => x.Sma != null));
+        Assert.HasCount(502, results);
+        Assert.AreEqual(473, results.Count(static x => x.Sma != null));
     }
 
     [TestMethod]
@@ -139,9 +139,9 @@ public class BetaTests : TestBase
             .GetBeta(otherQuotes.GetSma(2), 20)
             .ToList();
 
-        Assert.AreEqual(502, results.Count);
-        Assert.AreEqual(481, results.Count(x => x.Beta != null));
-        Assert.AreEqual(0, results.Count(x => x.Beta is double and double.NaN));
+        Assert.HasCount(502, results);
+        Assert.AreEqual(481, results.Count(static x => x.Beta != null));
+        Assert.IsEmpty(results.Where(static x => x.Beta is double v && double.IsNaN(v)));
     }
 
     [TestMethod]
@@ -151,22 +151,22 @@ public class BetaTests : TestBase
             .GetBeta(badQuotes, 15, BetaType.Standard)
             .ToList();
 
-        Assert.AreEqual(502, r1.Count);
-        Assert.AreEqual(0, r1.Count(x => x.Beta is double and double.NaN));
+        Assert.HasCount(502, r1);
+        Assert.IsEmpty(r1.Where(static x => x.Beta is double v && double.IsNaN(v)));
 
         List<BetaResult> r2 = badQuotes
             .GetBeta(badQuotes, 15, BetaType.Up)
             .ToList();
 
-        Assert.AreEqual(502, r2.Count);
-        Assert.AreEqual(0, r2.Count(x => x.BetaUp is double and double.NaN));
+        Assert.HasCount(502, r2);
+        Assert.IsEmpty(r2.Where(static x => x.BetaUp is double v && double.IsNaN(v)));
 
         List<BetaResult> r3 = badQuotes
             .GetBeta(badQuotes, 15, BetaType.Down)
             .ToList();
 
-        Assert.AreEqual(502, r3.Count);
-        Assert.AreEqual(0, r3.Count(x => x.BetaDown is double and double.NaN));
+        Assert.HasCount(502, r3);
+        Assert.IsEmpty(r3.Where(static x => x.BetaDown is double v && double.IsNaN(v)));
     }
 
     [TestMethod]
@@ -176,7 +176,7 @@ public class BetaTests : TestBase
             .GetBeta(bigQuotes, 150, BetaType.All)
             .ToList();
 
-        Assert.AreEqual(1246, r.Count);
+        Assert.HasCount(1246, r);
     }
 
     [TestMethod]
@@ -212,7 +212,7 @@ public class BetaTests : TestBase
             .ToList();
 
         // assertions
-        Assert.AreEqual(502 - 20, results.Count);
+        Assert.HasCount(502 - 20, results);
 
         BetaResult last = results.LastOrDefault();
         Assert.AreEqual(1.5123, last.Beta.Round(4));
@@ -227,8 +227,8 @@ public class BetaTests : TestBase
             .ToList();
 
         // proper quantities
-        Assert.AreEqual(502, results.Count);
-        Assert.AreEqual(482, results.Count(x => x.Beta != null));
+        Assert.HasCount(502, results);
+        Assert.AreEqual(482, results.Count(static x => x.Beta != null));
 
         // sample value
         BetaResult r = results[501];
@@ -242,10 +242,10 @@ public class BetaTests : TestBase
             .GetBeta(noquotes, 5)
             .ToList();
 
-        Assert.AreEqual(0, r0.Count);
+        Assert.IsEmpty(r0);
 
         List<BetaResult> r1 = onequote.GetBeta(onequote, 5).ToList();
-        Assert.AreEqual(1, r1.Count);
+        Assert.HasCount(1, r1);
     }
 
     [TestMethod]
@@ -277,21 +277,21 @@ public class BetaTests : TestBase
             new Quote { Date = DateTime.Parse("1/9/2020", EnglishCulture), Close = 1234 }
         ];
 
-        Assert.ThrowsException<InvalidQuotesException>(()
-            => quoteA.GetBeta(quoteB, 3));
+        Assert.ThrowsExactly<InvalidQuotesException>(
+            () => quoteA.GetBeta(quoteB, 3));
     }
 
     [TestMethod]
     public void Exceptions()
     {
         // bad lookback period
-        Assert.ThrowsException<ArgumentOutOfRangeException>(()
-            => quotes.GetBeta(otherQuotes, 0));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(
+            () => quotes.GetBeta(otherQuotes, 0));
 
         // bad evaluation quotes
         List<Quote> eval = TestData.GetCompare(300).ToList();
 
-        Assert.ThrowsException<InvalidQuotesException>(()
-            => quotes.GetBeta(eval, 30));
+        Assert.ThrowsExactly<InvalidQuotesException>(
+            () => quotes.GetBeta(eval, 30));
     }
 }

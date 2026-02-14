@@ -1,0 +1,521 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // Schema: https://code.visualstudio.com/docs/reference/tasks-appendix
+  "$schema": "vscode://schemas/tasks",
+  "version": "2.0.0",
+  "inputs": [
+    {
+      "id": "roslynatorCommand",
+      "description": "Select command type for Roslynator",
+      "options": [
+        "analyze",
+        "fix"
+      ],
+      "default": "fix",
+      "type": "pickString"
+    },
+    {
+      "id": "roslynatorSeverity",
+      "description": "Select severity level (depth) for Roslynator action",
+      "options": [
+        "error",
+        "warning",
+        "info",
+        "hidden"
+      ],
+      "default": "info",
+      "type": "pickString"
+    }
+  ],
+  // defaults
+  "group": "none",
+  "presentation": {
+    "clear": true,
+    "echo": true,
+    "panel": "dedicated",
+    "focus": true,
+    "reveal": "always",
+    "revealProblems": "onProblem",
+    "showReuseMessage": false
+  },
+  "problemMatcher": [],
+  "options": {
+    "cwd": "${workspaceFolder}"
+  },
+  // tasks
+  "tasks": [
+    {
+      "label": "Setup: Dev tools",
+      "detail": "Complete one-time environment setup (global tools and packages)",
+      "type": "shell",
+      "command": "bash .devcontainer/startup.sh",
+      "problemMatcher": [
+        "$msCompile",
+        "$eslint-compact"
+      ]
+    },
+    {
+      "label": "Initialize: Pull, rebuild, fixers, and unit test",
+      "detail": "Pull latest, clean, rebuild non-incremental, fix all, and test",
+      "group": "build",
+      "dependsOn": [
+        "Git: pull",
+        "Clean: .NET Solution (dotnet clean)",
+        "Build: .NET Solution (not incremental)",
+        "Lint: .NET code & markdown files (fix)",
+        "Test: Unit tests"
+      ],
+      "dependsOrder": "sequence"
+    },
+    {
+      "label": "Git: pull",
+      "detail": "Pull latest changes from Git",
+      "type": "shell",
+      "command": "git pull || echo 'No remote branch!'",
+      "problemMatcher": []
+    },
+    {
+      "label": "Install: All code dependencies",
+      "detail": "Restore .NET packages and Ruby gems",
+      "dependsOn": [
+        "Install: .NET packages",
+        "Install: Website Ruby packages"
+      ],
+      "dependsOrder": "parallel"
+    },
+    {
+      "label": "Install: .NET packages",
+      "detail": "Restore NuGet packages for solution",
+      "type": "shell",
+      "command": "dotnet restore && dotnet restore docs/Examples && dotnet outdated --exclude FluentAssertions",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Inspect: .NET packages",
+      "detail": "List outdated NuGet packages in the root solution using dotnet-outdated",
+      "type": "shell",
+      "command": "dotnet outdated --exclude FluentAssertions && dotnet outdated docs/Examples"
+    },
+    {
+      "label": "Update: .NET packages (outdated --upgrade)",
+      "detail": "Upgrade outdated NuGet packages in the root solution using dotnet-outdated",
+      "type": "shell",
+      "command": "dotnet outdated --upgrade --exclude FluentAssertions && dotnet outdated --upgrade docs/Examples"
+    },
+    {
+      "label": "Install: Website Ruby packages",
+      "detail": "Install Ruby gems for docs site (Jekyll)",
+      "type": "shell",
+      "command": "bundle install --jobs 4 && bundle clean --force && echo '✓ Install complete!'",
+      "options": {
+        "cwd": "${workspaceFolder}/docs",
+        "env": {
+          "BUNDLE_GEMFILE": "${workspaceFolder}/docs/Gemfile",
+          "BUNDLE_PATH": "${workspaceFolder}/docs/vendor/bundle"
+        }
+      },
+      "problemMatcher": {
+        "owner": "bundle",
+        "fileLocation": "relative",
+        "pattern": {
+          "regexp": "^(.*):(\\d+):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "message": 3
+        }
+      }
+    },
+    {
+      "label": "Update: Website Ruby packages",
+      "detail": "Install then update Ruby gems conservatively and clean",
+      "type": "shell",
+      "command": "bundle lock --add-platform x86_64-linux x64-mingw-ucrt && bundle install && bundle update --conservative && bundle clean --force && echo '✓ Update complete!'",
+      "options": {
+        "cwd": "${workspaceFolder}/docs",
+        "env": {
+          "BUNDLE_GEMFILE": "${workspaceFolder}/docs/Gemfile",
+          "BUNDLE_PATH": "${workspaceFolder}/docs/vendor/bundle"
+        }
+      }
+    },
+    {
+      "label": "Clean: Website Jekyll build cache",
+      "detail": "Delete the _site build outputs cache.",
+      "type": "shell",
+      "command": "bundle exec jekyll clean",
+      "options": {
+        "cwd": "${workspaceFolder}/docs",
+        "env": {
+          "BUNDLE_GEMFILE": "${workspaceFolder}/docs/Gemfile",
+          "BUNDLE_PATH": "${workspaceFolder}/docs/vendor/bundle"
+        }
+      }
+    },
+    {
+      "label": "Clean: .NET Solution (dotnet clean)",
+      "detail": "Clean build outputs (bin/obj) for solution",
+      "type": "shell",
+      "command": "dotnet clean -v minimal --nologo && dotnet clean -c Release -v minimal --nologo",
+      "group": "build",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Delete: Temporary caches",
+      "detail": "Delete bin, obj, node_modules, other caches, and lock files",
+      "type": "shell",
+      "command": "bash tools/scripts/clean.sh",
+      "group": "build",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Delete: Temporary caches (and restore)",
+      "detail": "Delete temporary caches then restore",
+      "type": "shell",
+      "command": "bash tools/scripts/clean.sh && dotnet restore --force-evaluate",
+      "group": "build",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Delete: Temporary caches (and build)",
+      "detail": "Delete temporary caches then rebuild",
+      "type": "shell",
+      "command": "bash tools/scripts/clean.sh && dotnet build --no-incremental",
+      "group": "build",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Build: .NET Solution (incremental)",
+      "detail": "Incremental build of solution (default)",
+      "type": "shell",
+      "command": "dotnet build -v minimal --nologo",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Build: .NET Solution (not incremental)",
+      "detail": "Full rebuild without incremental compilation",
+      "type": "shell",
+      "command": "dotnet build -v minimal --nologo --no-incremental",
+      "group": "build",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Build: Website",
+      "detail": "Build the Jekyll website dist package in docs/_site folder",
+      "type": "shell",
+      "command": "bundle exec jekyll build && echo '✓ Build complete!'",
+      "group": "build",
+      "dependsOn": "Install: Website Ruby packages",
+      "dependsOrder": "sequence",
+      "options": {
+        "cwd": "${workspaceFolder}/docs",
+        "env": {
+          "BUNDLE_GEMFILE": "${workspaceFolder}/docs/Gemfile",
+          "BUNDLE_PATH": "${workspaceFolder}/docs/vendor/bundle"
+        }
+      }
+    },
+    {
+      "label": "Lint: .NET format",
+      "detail": "Verify code formatting and style with 'dotnet format'",
+      "type": "shell",
+      "command": "dotnet format --verify-no-changes --severity info --no-restore",
+      "group": "test",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Lint: .NET format (fix)",
+      "detail": "Fix code formatting and style with 'dotnet format'",
+      "type": "shell",
+      "command": "dotnet format --severity info --no-restore",
+      "group": "test",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Lint: .NET Roslynator (custom)",
+      "detail": "Input params for Roslynator action",
+      "type": "shell",
+      "command": "roslynator ${input:roslynatorCommand} --properties TargetFramework=net10.0 --severity-level ${input:roslynatorSeverity} --verbosity normal",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Lint: .NET Roslynator (analyze)",
+      "detail": "Verify code formatting and style with Roslynator",
+      "type": "shell",
+      "command": "roslynator analyze --properties TargetFramework=net10.0 --severity-level info --verbosity normal",
+      "group": "test",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Lint: .NET Roslynator (fix)",
+      "detail": "Fix code formatting and style with Roslynator",
+      "type": "shell",
+      "command": "roslynator fix --properties TargetFramework=net10.0 --severity-level info --verbosity normal",
+      "group": "test",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Lint: .NET code",
+      "detail": "Run Roslynator analysis only (fast for dev loop)",
+      "dependsOn": [
+        "Build: .NET Solution (incremental)",
+        "Lint: .NET Roslynator (analyze)"
+      ],
+      "dependsOrder": "sequence",
+      "group": "test",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Lint: .NET code (fix)",
+      "detail": "Auto-fix .NET code issues with Roslynator (fast for dev loop)",
+      "dependsOn": [
+        "Lint: .NET Roslynator (fix)"
+      ],
+      "dependsOrder": "sequence",
+      "group": "none",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Lint: Markdown",
+      "detail": "Run markdownlint over documentation",
+      "type": "shell",
+      "command": "echo y | npx markdownlint-cli2",
+      "group": "test",
+      "problemMatcher": "$markdownlint"
+    },
+    {
+      "label": "Lint: Markdown (fix)",
+      "detail": "Auto-fix markdown formatting issues",
+      "type": "shell",
+      "command": "echo y | npx markdownlint-cli2 --fix",
+      "problemMatcher": "$markdownlint"
+    },
+    {
+      "label": "Lint: .NET code & markdown files",
+      "detail": "Run Roslynator analysis and markdown lint (fast for dev loop)",
+      "dependsOn": [
+        "Build: .NET Solution (incremental)",
+        "Lint: .NET code",
+        "Lint: Markdown"
+      ],
+      "dependsOrder": "sequence",
+      "group": "test",
+      "problemMatcher": [
+        "$msCompile",
+        "$markdownlint"
+      ]
+    },
+    {
+      "label": "Lint: .NET code & markdown files (fix)",
+      "detail": "Auto-fix code and markdown issues with Roslynator (fast for dev loop)",
+      "dependsOn": [
+        "Lint: .NET code (fix)",
+        "Lint: Markdown (fix)"
+      ],
+      "dependsOrder": "sequence",
+      "group": "none",
+      "problemMatcher": [
+        "$msCompile",
+        "$markdownlint"
+      ]
+    },
+    {
+      "label": "Lint: All",
+      "detail": "Run complete linting (Roslynator + dotnet format + markdown)",
+      "dependsOn": [
+        "Build: .NET Solution (incremental)",
+        "Lint: .NET Roslynator (analyze)",
+        "Lint: .NET format",
+        "Lint: Markdown"
+      ],
+      "dependsOrder": "sequence",
+      "group": "test",
+      "problemMatcher": [
+        "$msCompile",
+        "$markdownlint"
+      ]
+    },
+    {
+      "label": "Lint: All (fix)",
+      "detail": "Auto-fix all code and markdown issues (includes dotnet format)",
+      "dependsOn": [
+        "Lint: .NET Roslynator (fix)",
+        "Lint: .NET format (fix)",
+        "Lint: Markdown (fix)"
+      ],
+      "dependsOrder": "sequence",
+      "group": "none",
+      "problemMatcher": [
+        "$msCompile",
+        "$markdownlint"
+      ]
+    },
+    {
+      "label": "Test: Unit tests",
+      "detail": "Run unit tests only (excludes integration and regression tests)",
+      "type": "shell",
+      "command": "dotnet test tests/indicators/Tests.Indicators.csproj --no-restore --nologo --settings tests/tests.unit.runsettings",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Test: Regression tests",
+      "detail": "Run regression tests only (baseline validation)",
+      "type": "shell",
+      "command": "dotnet test tests/indicators/Tests.Indicators.csproj --no-restore --nologo --settings tests/tests.regression.runsettings",
+      "group": "test",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Test: Integration",
+      "detail": "Run integration tests only (requires external dependencies)",
+      "type": "shell",
+      "command": "dotnet test tests/integration/Tests.Integration.csproj --no-restore --nologo && dotnet test tests/public-api/Tests.PublicApi.csproj --no-restore --nologo",
+      "group": "test",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Test: All tests",
+      "detail": "Run all tests including integration tests",
+      "type": "shell",
+      "command": "dotnet test --no-restore --nologo",
+      "group": "test",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Test: Unit tests with coverage",
+      "detail": "Run tests with coverage collection",
+      "type": "shell",
+      "command": "dotnet test --collect:\"Code Coverage\" --no-restore --nologo",
+      "group": "test",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Test: Performance (all)",
+      "detail": "Run all BenchmarkDotNet performance tests (Release mode)",
+      "type": "shell",
+      "command": "dotnet run --project tools/performance/Tests.Performance.csproj -c Release",
+      "group": "test",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Test: Performance (Series)",
+      "detail": "Run Series indicator benchmarks only (Release mode)",
+      "type": "shell",
+      "command": "dotnet run --project tools/performance/Tests.Performance.csproj -c Release -- --filter *SeriesIndicators*",
+      "group": "test",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Test: Performance (Buffer)",
+      "detail": "Run Buffer indicator benchmarks only (Release mode)",
+      "type": "shell",
+      "command": "dotnet run --project tools/performance/Tests.Performance.csproj -c Release -- --filter *BufferIndicators*",
+      "group": "test",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Test: Performance (Stream)",
+      "detail": "Run Stream indicator benchmarks only (Release mode)",
+      "type": "shell",
+      "command": "dotnet run --project tools/performance/Tests.Performance.csproj -c Release -- --filter *StreamIndicators*",
+      "group": "test",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Verify: Quick checks (build + lint + unit test)",
+      "detail": "Complete CI verification: build, lint, and test",
+      "group": "test",
+      "dependsOn": [
+        "Build: .NET Solution (incremental)",
+        "Lint: .NET code & markdown files",
+        "Test: Unit tests"
+      ],
+      "dependsOrder": "sequence"
+    },
+    {
+      "label": "Generate: Test baseline data (all)",
+      "detail": "Generate all regression test baseline JSON files",
+      "type": "shell",
+      "command": "dotnet run --project tools/baselining/Test.DataGenerator.csproj -- --all",
+      "group": "none",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Run: Website (and open)",
+      "detail": "Serve Jekyll docs website with LiveReload and open browser",
+      "type": "shell",
+      "command": "bundle exec jekyll serve --livereload --open-url",
+      "dependsOn": "Install: Website Ruby packages",
+      "dependsOrder": "sequence",
+      "isBackground": true,
+      "options": {
+        "cwd": "${workspaceFolder}/docs",
+        "env": {
+          "BUNDLE_GEMFILE": "${workspaceFolder}/docs/Gemfile",
+          "BUNDLE_PATH": "${workspaceFolder}/docs/vendor/bundle"
+        }
+      },
+      "problemMatcher": {
+        "owner": "website",
+        "pattern": {
+          "regexp": "^$"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*Configuration file:.*_config.yml.*",
+          "endsPattern": ".*Server running.*"
+        }
+      }
+    },
+    {
+      "label": "Run: Website",
+      "detail": "Serve Jekyll docs website with LiveReload",
+      "type": "shell",
+      "command": "bundle exec jekyll serve --livereload",
+      "dependsOn": "Install: Website Ruby packages",
+      "dependsOrder": "sequence",
+      "isBackground": true,
+      "options": {
+        "cwd": "${workspaceFolder}/docs",
+        "env": {
+          "BUNDLE_GEMFILE": "${workspaceFolder}/docs/Gemfile",
+          "BUNDLE_PATH": "${workspaceFolder}/docs/vendor/bundle"
+        }
+      },
+      "problemMatcher": {
+        "owner": "website",
+        "pattern": {
+          "regexp": "^$"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*Configuration file:.*_config.yml.*",
+          "endsPattern": ".*Server running.*"
+        }
+      }
+    },
+    {
+      "label": "Run: Test application",
+      "detail": "Run the test application tool (exercises all indicators)",
+      "type": "shell",
+      "command": "dotnet run --project tools/application/Test.Application.csproj",
+      "group": "none",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Run: Test simulation",
+      "detail": "Run streaming indicators simulation demo",
+      "type": "shell",
+      "command": "dotnet run --project tools/simulate/Test.Simulation.csproj",
+      "group": "none",
+      "problemMatcher": "$msCompile"
+    }
+  ]
+}

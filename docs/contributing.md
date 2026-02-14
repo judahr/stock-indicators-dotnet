@@ -59,9 +59,10 @@ Use the [Discussions](https://github.com/DaveSkender/Stock.Indicators/discussion
 
 ### Performance benchmarking
 
-Running the `Tests.Performance` console application in `Release` mode will produce [benchmark performance data](https://dotnet.stockindicators.dev/performance/) that we include on our documentation site.
+Running the performance benchmark application in `Release` mode will produce [benchmark performance data](https://dotnet.stockindicators.dev/performance/) that we include on our documentation site.
 
 ```bash
+# from /tests/performance folder
 # run all performance benchmarks
 dotnet run -c Release
 
@@ -79,10 +80,10 @@ See [Ruby Jekyll documentation](https://jekyllrb.com/docs) for initial setup.
 ```bash
 # from /docs folder
 bundle install
-bundle exec jekyll serve -o -l
-
-# the site will open http://127.0.0.1:4000
+bundle exec jekyll serve --livereload
 ```
+
+The site will be available at `http://127.0.0.1:4000`.
 
 When adding or updating indicators:
 
@@ -95,7 +96,11 @@ When adding or updating indicators:
 - build the site locally (see above), then:
 
 ```bash
-npx pa11y-ci --sitemap http://127.0.0.1:4000/sitemap.xml
+# from /docs folder
+npx pa11y-ci \
+  --yes
+  --sitemap http://127.0.0.1:4000/sitemap.xml \
+  --config ./.pa11yci
 ```
 
 ## Submitting changes
@@ -103,9 +108,19 @@ npx pa11y-ci --sitemap http://127.0.0.1:4000/sitemap.xml
 By submitting changes to this repo you are also acknowledging and agree to the terms in both the [Developer Certificate of Origin (DCO) 1.1](https://developercertificate.org) and the [Apache 2.0 license](https://opensource.org/licenses/Apache-2.0).  These are standard open-source terms and conditions.
 
 When ready, submit a [Pull Request](https://help.github.com/pull-requests) with a clear description of what you've done and why it's important.
+
+### Pull Request naming convention
+
+Pull Request titles must follow the [Conventional Commits](https://www.conventionalcommits.org) format: `type: Subject` where:
+
+- `type` is one of: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert (lowercase)
+- `Subject` starts with an uppercase letter
+
+Examples: `feat: Add RSI indicator`, `fix: Resolve calculation error in MACD`, `docs: Update API documentation`
+
 Always write a clear log message for your commits. One-line messages are fine for most changes.
 
-After a Pull Request is reviewed, accepted, and [squash] merged to `main`, we may batch changes before publishing a new package version to the [public NuGet repository](https://www.nuget.org/packages/Skender.Stock.Indicators).  Please be patient with turnaround time.
+After a Pull Request is reviewed, accepted, and [squash] merged to the default branch, we may batch changes before publishing a new package version to the [public NuGet repository](https://www.nuget.org/packages/Skender.Stock.Indicators).  Please be patient with turnaround time.
 
 ## Code reviews and administration
 
@@ -114,28 +129,75 @@ If you want to contribute administratively, do code reviews, or provide general 
 ## Standards and design guidelines
 
 - [Guiding principles for this project](https://github.com/DaveSkender/Stock.Indicators/discussions/648)
-- [.NET Framework Design Guidelines](https://docs.microsoft.com/en-us/dotnet/standard/design-guidelines)
-- [NuGet Best Practices](https://docs.microsoft.com/en-us/dotnet/standard/library-guidance/nuget)
+- [.NET Design Guidelines](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines)
+- [NuGet Best Practices](https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/nuget)
 - [Semantic Version 2.0](https://semver.org)
+
+## GitHub Copilot and AI development
+
+This repository is optimized for GitHub Copilot and coding agents with:
+
+- **Custom agent instructions** in `AGENTS.md` files (root and subdirectories) providing repository context, coding patterns, and domain knowledge
+- **Scoped instruction files** in `.github/instructions/` for targeted guidance by file type and folder
+- **Enhanced VS Code settings** in `.vscode/settings.json` with Copilot-specific configurations for optimal suggestions
+- **Development container** in `.devcontainer/devcontainer.json` for consistent development environment setup
+- **MCP server configurations** in `.vscode/mcp.json` for extended AI tools for developing capabilities with financial mathematics and .NET performance analysis
+
+When using GitHub Copilot:
+
+- Follow the established patterns documented in the AGENTS.md files and instruction files
+- Ensure all financial calculations maintain decimal precision
+- Include comprehensive unit tests for any new indicators
+- Validate mathematical accuracy against reference implementations
 
 ## Versioning
 
 We use the `GitVersion` tool for [semantic versioning](https://semver.org).  It is mostly auto generated in the build.
 
-Type | Format | Description
------------- | ------ | -----------
-Major | `x.-.-` | A significant deviation with major breaking changes.
-Minor | `-.x.-` | A new feature, usually new non-breaking change, such as adding an indicator.  Minor breaking changes may occur here and are denoted in the [release notes](https://github.com/DaveSkender/Stock.Indicators/releases).
-Patch | `-.-.x` | A small bug fix, chore, or documentation change.
-Increment | `-.-.-+x` | Intermediate commits between releases.
+<!-- markdownlint-disable MD060 -->
+| Type      | Format    | Description |
+| --------- | --------- | ----------- |
+| Major     | `x.-.-`   | A significant deviation with major breaking changes. |
+| Minor     | `-.x.-`   | A new feature, usually new non-breaking change, such as adding an indicator.  Minor breaking changes may occur here and are denoted in the [release notes](https://github.com/DaveSkender/Stock.Indicators/releases). |
+| Patch     | `-.-.x`   | A small bug fix, chore, or documentation change. |
+| Increment | `-.-.-+x` | Intermediate commits between releases. |
+<!-- markdownlint-enable MD060 -->
 
-This only needs to be done on the merge to `main` when the Pull Request is committed, so your feature branch does not need to include this as it will get squashed anyway.
+Using these merge commit messages only needs to be done on the merge to `main` when the Pull Request is committed and need to reflect a minor or major version update.  Incremental feature branch commits do not need to include this as it will get squashed anyway.
 
 - Adding `+semver: major` as a PR merge commit message will increment the major x.-.- element
 - Adding `+semver: minor` as a PR merge commit message will increment the minor -.x.- element
-- Adding `+semver: patch` as a PR merge commit message will increment the minor -.-.x element.  Patch element auto-increments, so you'd only need to do this to override the next value.
+- Adding `+semver: patch` as a PR merge commit message will increment the minor -.-.x element (default).  Patch element auto-increments, so you'd only need to do this to override the next value.
 
 A Git `tag`, in accordance with the above schema, is introduced automatically after deploying to the public NuGet package manager and is reflected in the [Releases](https://github.com/DaveSkender/Stock.Indicators/releases).
+
+### Version marker and suffix taxonomy
+
+When the packager deployer runs, it will produce versions and naming follow these rules:
+
+| Trigger | Branch | Environment    | Preview | Dry-run | Suffix       | Example           |
+| :------ | :----- | :------------- | :-----: | :-----: | :----------- | :---------------- |
+| Push    | main   | pkg.github.com | Yes     | No      | `-ci.X`      | `2.6.2-ci.45`     |
+| Push    | v*     | pkg.github.com | Yes     | No      | `-ci.X`      | `3.0.0-ci.16`     |
+| Manual  | any    | pkg.github.com | Yes     | Yes     | `-preview.N` | `3.0.0-preview.2` |
+| Manual  | any    | nuget.org      | Yes     | Yes     | `-preview.N` | `3.0.0-preview.2` |
+| Manual  | main   | nuget.org      | No      | Yes     |  _(none)_    | `2.6.2`           |
+| Manual  | main   | nuget.org      | No      | No      |  _(none)_    | `2.6.2`           |
+
+**Legend:**
+
+- _Preview_: If true, version gets a preview or CI suffix
+- _Dry-run_: If true, package is not published (for testing only)
+- _Suffix_: Shows how the version string is modified
+- _Example_: Illustrative version number for each scenario.
+
+> Additional info:
+>
+> - `X` is a sequential number based on the last CI publish.
+> - `R` is a sequential number based on the last tagged production deployment.
+> - Only a `main` non-dry-run trigger will tag the branch with an official release marker.
+
+For more details, see the [`deploy-package.yml`](https://github.com/DaveSkender/Stock.Indicators/blob/main/.github/workflows/deploy-package.yml) workflow.
 
 ## License
 

@@ -1,0 +1,6 @@
+# Jekyll site
+_site/
+vendor/
+.bundle/
+.vitepress/cache/
+.vitepress/dist/

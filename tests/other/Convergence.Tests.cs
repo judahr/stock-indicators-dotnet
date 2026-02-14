@@ -1,7 +1,7 @@
 namespace Tests.Convergence;
 
 [TestClass]
-public class ConvergenceTests : TestBase
+public class Convergences : TestBase
 {
     private static readonly int[] QuotesQuantities =
         [5, 14, 28, 40, 50, 75, 100, 110, 120, 130, 140, 150, 160, 175, 200, 250, 350, 500, 600, 700, 800, 900, 1000];
@@ -324,7 +324,7 @@ public class ConvergenceTests : TestBase
     [TestMethod]
     public void StochRsi()
     {
-        foreach (int qty in QuotesQuantities.Where(x => x <= 502))
+        foreach (int qty in QuotesQuantities.Where(static x => x <= 502))
         {
             IEnumerable<Quote> quotes = TestData.GetDefault(qty);
             IEnumerable<StochRsiResult> r = quotes.GetStochRsi(14, 14, 3, 1);

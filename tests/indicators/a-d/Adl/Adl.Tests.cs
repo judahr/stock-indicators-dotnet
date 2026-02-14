@@ -11,21 +11,21 @@ public class AdlTests : TestBase
             .ToList();
 
         // proper quantities
-        Assert.AreEqual(502, results.Count);
-        Assert.AreEqual(502, results.Count(x => x.AdlSma == null));
+        Assert.HasCount(502, results);
+        Assert.AreEqual(502, results.Count(static x => x.AdlSma == null));
 
         // sample values
         AdlResult r1 = results[249];
         Assert.AreEqual(0.7778, r1.MoneyFlowMultiplier.Round(4));
         Assert.AreEqual(36433792.89, r1.MoneyFlowVolume.Round(2));
         Assert.AreEqual(3266400865.74, r1.Adl.Round(2));
-        Assert.AreEqual(null, r1.AdlSma);
+        Assert.IsNull(r1.AdlSma);
 
         AdlResult r2 = results[501];
         Assert.AreEqual(0.8052, r2.MoneyFlowMultiplier.Round(4));
         Assert.AreEqual(118396116.25, r2.MoneyFlowVolume.Round(2));
         Assert.AreEqual(3439986548.42, r2.Adl.Round(2));
-        Assert.AreEqual(null, r2.AdlSma);
+        Assert.IsNull(r2.AdlSma);
     }
 
     [TestMethod]
@@ -36,8 +36,8 @@ public class AdlTests : TestBase
             .ToList();
 
         // proper quantities
-        Assert.AreEqual(502, results.Count);
-        Assert.AreEqual(483, results.Count(x => x.AdlSma != null));
+        Assert.HasCount(502, results);
+        Assert.AreEqual(483, results.Count(static x => x.AdlSma != null));
 
         // sample value
         AdlResult r = results[501];
@@ -58,8 +58,8 @@ public class AdlTests : TestBase
         // assertions
 
         // proper quantities
-        Assert.AreEqual(502, results.Count);
-        Assert.AreEqual(493, results.Count(x => x.Sma != null));
+        Assert.HasCount(502, results);
+        Assert.AreEqual(493, results.Count(static x => x.Sma != null));
     }
 
     [TestMethod]
@@ -69,8 +69,8 @@ public class AdlTests : TestBase
             .GetAdl()
             .ToList();
 
-        Assert.AreEqual(502, r.Count);
-        Assert.AreEqual(0, r.Count(x => double.IsNaN(x.Adl)));
+        Assert.HasCount(502, r);
+        Assert.IsEmpty(r.Where(static x => double.IsNaN(x.Adl)));
     }
 
     [TestMethod]
@@ -80,7 +80,7 @@ public class AdlTests : TestBase
             .GetAdl()
             .ToList();
 
-        Assert.AreEqual(1246, r.Count);
+        Assert.HasCount(1246, r);
     }
 
     [TestMethod]
@@ -90,7 +90,7 @@ public class AdlTests : TestBase
             .GetAdl()
             .ToList();
 
-        Assert.AreEqual(1000, r.Count);
+        Assert.HasCount(1000, r);
     }
 
     [TestMethod]
@@ -100,18 +100,18 @@ public class AdlTests : TestBase
             .GetAdl()
             .ToList();
 
-        Assert.AreEqual(0, r0.Count);
+        Assert.IsEmpty(r0);
 
         List<AdlResult> r1 = onequote
             .GetAdl()
             .ToList();
 
-        Assert.AreEqual(1, r1.Count);
+        Assert.HasCount(1, r1);
     }
 
     // bad SMA period
     [TestMethod]
     public void Exceptions()
-        => Assert.ThrowsException<ArgumentOutOfRangeException>(()
-            => quotes.GetAdl(0));
+        => Assert.ThrowsExactly<ArgumentOutOfRangeException>(
+            static () => quotes.GetAdl(0));
 }

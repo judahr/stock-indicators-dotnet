@@ -11,8 +11,8 @@ public class FisherTransformTests : TestBase
             .ToList();
 
         // proper quantities
-        Assert.AreEqual(502, results.Count);
-        Assert.AreEqual(501, results.Count(x => x.Fisher != 0));
+        Assert.HasCount(502, results);
+        Assert.AreEqual(501, results.Count(static x => x.Fisher != 0));
 
         // sample values
         Assert.AreEqual(0, results[0].Fisher);
@@ -54,8 +54,8 @@ public class FisherTransformTests : TestBase
             .GetFisherTransform(10)
             .ToList();
 
-        Assert.AreEqual(502, results.Count);
-        Assert.AreEqual(501, results.Count(x => x.Fisher != 0));
+        Assert.HasCount(502, results);
+        Assert.AreEqual(501, results.Count(static x => x.Fisher != 0));
     }
 
     [TestMethod]
@@ -65,8 +65,8 @@ public class FisherTransformTests : TestBase
             .GetFisherTransform(6)
             .ToList();
 
-        Assert.AreEqual(200, r.Count);
-        Assert.AreEqual(0, r.Count(x => x.Fisher is double and double.NaN));
+        Assert.HasCount(200, r);
+        Assert.IsEmpty(r.Where(static x => x.Fisher is double v && double.IsNaN(v)));
     }
 
     [TestMethod]
@@ -77,8 +77,8 @@ public class FisherTransformTests : TestBase
             .GetFisherTransform(10)
             .ToList();
 
-        Assert.AreEqual(502, results.Count);
-        Assert.AreEqual(501, results.Count(x => x.Fisher != 0));
+        Assert.HasCount(502, results);
+        Assert.AreEqual(501, results.Count(static x => x.Fisher != 0));
     }
 
     [TestMethod]
@@ -89,8 +89,8 @@ public class FisherTransformTests : TestBase
             .GetSma(10)
             .ToList();
 
-        Assert.AreEqual(502, results.Count);
-        Assert.AreEqual(493, results.Count(x => x.Sma != null));
+        Assert.HasCount(502, results);
+        Assert.AreEqual(493, results.Count(static x => x.Sma != null));
     }
 
     [TestMethod]
@@ -100,8 +100,8 @@ public class FisherTransformTests : TestBase
             .GetFisherTransform(9)
             .ToList();
 
-        Assert.AreEqual(502, r.Count);
-        Assert.AreEqual(0, r.Count(x => x.Fisher is double and double.NaN));
+        Assert.HasCount(502, r);
+        Assert.IsEmpty(r.Where(static x => x.Fisher is double v && double.IsNaN(v)));
     }
 
     [TestMethod]
@@ -111,18 +111,18 @@ public class FisherTransformTests : TestBase
             .GetFisherTransform()
             .ToList();
 
-        Assert.AreEqual(0, r0.Count);
+        Assert.IsEmpty(r0);
 
         List<FisherTransformResult> r1 = onequote
             .GetFisherTransform()
             .ToList();
 
-        Assert.AreEqual(1, r1.Count);
+        Assert.HasCount(1, r1);
     }
 
     // bad lookback period
     [TestMethod]
     public void Exceptions()
-        => Assert.ThrowsException<ArgumentOutOfRangeException>(()
-            => quotes.GetFisherTransform(0));
+        => Assert.ThrowsExactly<ArgumentOutOfRangeException>(
+            static () => quotes.GetFisherTransform(0));
 }

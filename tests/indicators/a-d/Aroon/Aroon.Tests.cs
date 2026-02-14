@@ -11,10 +11,10 @@ public class Aroon : TestBase
             .ToList();
 
         // proper quantities
-        Assert.AreEqual(502, results.Count);
-        Assert.AreEqual(477, results.Count(x => x.AroonUp != null));
-        Assert.AreEqual(477, results.Count(x => x.AroonDown != null));
-        Assert.AreEqual(477, results.Count(x => x.Oscillator != null));
+        Assert.HasCount(502, results);
+        Assert.AreEqual(477, results.Count(static x => x.AroonUp != null));
+        Assert.AreEqual(477, results.Count(static x => x.AroonDown != null));
+        Assert.AreEqual(477, results.Count(static x => x.Oscillator != null));
 
         // sample values
         AroonResult r1 = results[210];
@@ -51,8 +51,8 @@ public class Aroon : TestBase
             .GetSma(10)
             .ToList();
 
-        Assert.AreEqual(502, results.Count);
-        Assert.AreEqual(468, results.Count(x => x.Sma != null));
+        Assert.HasCount(502, results);
+        Assert.AreEqual(468, results.Count(static x => x.Sma != null));
     }
 
     [TestMethod]
@@ -62,8 +62,8 @@ public class Aroon : TestBase
             .GetAroon(20)
             .ToList();
 
-        Assert.AreEqual(502, r.Count);
-        Assert.AreEqual(0, r.Count(x => x.Oscillator is double and double.NaN));
+        Assert.HasCount(502, r);
+        Assert.IsEmpty(r.Where(static x => x.Oscillator is double v && double.IsNaN(v)));
     }
 
     [TestMethod]
@@ -73,13 +73,13 @@ public class Aroon : TestBase
             .GetAroon()
             .ToList();
 
-        Assert.AreEqual(0, r0.Count);
+        Assert.IsEmpty(r0);
 
         List<AroonResult> r1 = onequote
             .GetAroon()
             .ToList();
 
-        Assert.AreEqual(1, r1.Count);
+        Assert.HasCount(1, r1);
     }
 
     [TestMethod]
@@ -91,7 +91,7 @@ public class Aroon : TestBase
             .ToList();
 
         // assertions
-        Assert.AreEqual(502 - 25, results.Count);
+        Assert.HasCount(502 - 25, results);
 
         AroonResult last = results.LastOrDefault();
         Assert.AreEqual(28, last.AroonUp);
@@ -102,6 +102,6 @@ public class Aroon : TestBase
     // bad lookback period
     [TestMethod]
     public void Exceptions()
-        => Assert.ThrowsException<ArgumentOutOfRangeException>(()
-            => quotes.GetAroon(0));
+        => Assert.ThrowsExactly<ArgumentOutOfRangeException>(
+            static () => quotes.GetAroon(0));
 }
