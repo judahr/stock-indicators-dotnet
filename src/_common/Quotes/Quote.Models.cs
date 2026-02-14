@@ -23,12 +23,12 @@ public class Quote : IQuote
 }
 
 [Serializable]
-internal class QuoteD
+public class QuoteD
 {
-    internal DateTime Date { get; set; }
-    internal double Open { get; set; }
-    internal double High { get; set; }
-    internal double Low { get; set; }
-    internal double Close { get; set; }
-    internal double Volume { get; set; }
+    public DateTime Date { get; set; }
+    public double Open { get; set; }
+    public double High { get; set; }
+    public double Low { get; set; }
+    public double Close { get; set; }
+    public double Volume { get; set; }
 }

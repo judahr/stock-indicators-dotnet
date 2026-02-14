@@ -12,4 +12,10 @@ public static partial class Indicator
         where TQuote : IQuote => quotes
             .ToQuoteD()
             .CalcAdx(lookbackPeriods);
+
+    public static List<AdxResult> GetAdx(
+        this List<QuoteD> quotes,
+        int lookbackPeriods = 14)
+         => quotes            
+            .CalcAdx(lookbackPeriods);
 }
