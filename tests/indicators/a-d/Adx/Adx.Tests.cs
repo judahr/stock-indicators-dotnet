@@ -72,6 +72,20 @@ public class AdxTests : TestBase
     }
 
     [TestMethod]
+    public void FromQuoteD()
+    {
+        List<AdxResult> expected = quotes
+            .GetAdx(14)
+            .ToList();
+
+        List<AdxResult> results = quotes
+            .ToQuoteD()
+            .GetAdx(14);
+
+        results.Should().BeEquivalentTo(expected);
+    }
+
+    [TestMethod]
     public void Chainor()
     {
         List<SmaResult> results = quotes

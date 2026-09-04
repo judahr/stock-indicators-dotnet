@@ -13,9 +13,24 @@ public static partial class Indicator
             .ToQuoteD()
             .CalcAdx(lookbackPeriods);
 
+    // SERIES, from QuoteD (double precision, no conversion)
+    /// <summary>
+    /// Gets the ADX series directly from double-precision quotes, without conversion.
+    /// </summary>
+    /// <param name="quotes">Historical price quotes, in double precision.</param>
+    /// <param name="lookbackPeriods">Number of periods in the lookback window.</param>
+    /// <returns>Time series of ADX and Plus/Minus Directional values.</returns>
+    /// <exception cref="ArgumentNullException">Quotes cannot be null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Invalid parameter value provided.</exception>
     public static List<AdxResult> GetAdx(
         this List<QuoteD> quotes,
         int lookbackPeriods = 14)
-         => quotes            
-            .CalcAdx(lookbackPeriods);
+    {
+        if (quotes is null)
+        {
+            throw new ArgumentNullException(nameof(quotes));
+        }
+
+        return quotes.CalcAdx(lookbackPeriods);
+    }
 }
